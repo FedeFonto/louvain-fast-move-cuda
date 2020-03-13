@@ -30,7 +30,7 @@ struct Community {
 		thrust::copy(graph.tot_weight_per_nodes.begin(), graph.tot_weight_per_nodes.end(), communities_weight.begin());
 		start = thrust::make_zip_iterator(thrust::make_tuple(graph.edge_source.begin(), graph.edge_destination.begin(), graph.weights.begin()));
 		end = thrust::make_zip_iterator(thrust::make_tuple(graph.edge_source.end(), graph.edge_destination.end(), graph.weights.end()));
-		
+		compute_modularity();
 	};
 
 	void update(Graph g) {

@@ -16,7 +16,6 @@ struct Graph {
 	To obtain all the neighboorhood of a node i we have to get all the element from links[degree[i]] to links[degree[i +1]].
 	The weight assciated to a links in position i is in weight[i].
 	*/
-	thrust::device_vector<unsigned long> degrees;
 	thrust::device_vector<int> n_of_neighboor;
 	thrust::device_vector<float> tot_weight_per_nodes;
 

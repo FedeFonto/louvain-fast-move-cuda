@@ -17,6 +17,14 @@
 
 struct AggregationPhase {
 	static void run(Community& community) {
+		#if PRINT_PERFORMANCE_LOG
+			cudaEvent_t start, stop;
+			cudaEventCreate(&start);
+			cudaEventCreate(&stop);
+			cudaEventRecord(start);
+		#endif
+
+
 		Graph new_graph = Graph();
 
 		int n_edge = community.graph.edge_source.size();
@@ -114,18 +122,17 @@ struct AggregationPhase {
 			new_graph.n_of_neighboor.begin()
 		);
 
-		new_graph.degrees = thrust::device_vector<unsigned long>(new_graph.n_nodes);
-		thrust::unique_by_key_copy(
-			new_graph.edge_source.begin(),
-			new_graph.edge_source.end(),
-			thrust::make_counting_iterator(0),
-			thrust::make_discard_iterator(),
-			new_graph.degrees.begin()
-			);
-		
 		new_graph.total_weight = community.graph.total_weight;
 
 		community.update(new_graph);
+
+		#if PRINT_PERFORMANCE_LOG
+			cudaEventRecord(stop);
+			cudaEventSynchronize(stop);
+			float milliseconds = 0;
+			cudaEventElapsedTime(&milliseconds, start, stop);
+			std::cout << "Aggregation Time : " << milliseconds << "ms" << std::endl;
+		#endif
 	}
 };
 

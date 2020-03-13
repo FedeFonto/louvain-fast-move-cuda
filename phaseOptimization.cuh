@@ -95,22 +95,42 @@ private:
 			optimize();
 			community.compute_modularity();
 			new_modularity = community.modularity;
-			if (new_modularity - old_modularity < 0) {
+			if (new_modularity - old_modularity <= 0) {
 				rollback();
 			}
 			execution_number++;
+		
+		#if PRINT_DEBUG_LOG
 			printf("Delta Modularity iteration %d: %10f \n", execution_number, new_modularity - old_modularity);
+		#endif 
 
 		} while ((execution_number <= EARLY_STOP_LIMIT) && (new_modularity - old_modularity > MODULARITY_CONVERGED_THRESHOLD));
 
-		printf("MODULARITY = %10f\n", community.modularity);
-
+		#if PRINT_DEBUG_LOG
+			printf("MODULARITY = %10f\n", community.modularity);
+		#endif 
 	}
 
 public:
 	static void run(Community& c, bool fastLocalMove) {
 		OptimizationPhase optimizer = OptimizationPhase(c);
+
+		#if PRINT_PERFORMANCE_LOG
+			cudaEvent_t start, stop;
+			cudaEventCreate(&start);
+			cudaEventCreate(&stop);
+			cudaEventRecord(start);
+		#endif
+		
 		optimizer.internal_run();
+
+		#if PRINT_PERFORMANCE_LOG
+			cudaEventRecord(stop);
+			cudaEventSynchronize(stop);
+			float milliseconds = 0;
+			cudaEventElapsedTime(&milliseconds, start, stop);
+			std::cout << "Optimization Time : " << milliseconds << "ms" << std::endl;		
+		#endif
 	}
 };
 
