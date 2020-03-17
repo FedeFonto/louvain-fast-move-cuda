@@ -1,3 +1,7 @@
+
+#ifndef GRAPH_CU   
+#define GRAPH_CU
+
 #include "graph.cuh"
 
 #include <iterator>
@@ -95,3 +99,5 @@ Graph::Graph(std::string name, bool weighted ) {
 
 	}
 };
+
+#endif
