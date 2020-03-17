@@ -2,8 +2,8 @@
 #define COMMUNITY_h
 
 #include "graph.cuh"
-#include <thrust\execution_policy.h>
-#include <thrust\sequence.h>
+#include <thrust/execution_policy.h>
+#include <thrust/sequence.h>
 #include "operators.h"
 #include <thrust/transform_reduce.h>
 

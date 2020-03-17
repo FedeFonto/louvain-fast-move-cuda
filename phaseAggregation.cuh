@@ -4,11 +4,11 @@
 #include "community.h"
 #include "constants.h"
 #include "operators.h"
-#include <thrust\count.h>
-#include <thrust\remove.h>
-#include <thrust\sort.h>
-#include <thrust\reduce.h>
-#include <thrust\extrema.h>
+#include <thrust/count.h>
+#include <thrust/remove.h>
+#include <thrust/sort.h>
+#include <thrust/reduce.h>
+#include <thrust/extrema.h>
 #include <thrust/iterator/discard_iterator.h>
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/unique.h>

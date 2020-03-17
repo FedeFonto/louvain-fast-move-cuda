@@ -4,8 +4,8 @@
 #include <fstream>
 #include <set>
 #include <vector>
-#include <thrust\sort.h>
-#include <thrust\reduce.h>
+#include <thrust/sort.h>
+#include <thrust/reduce.h>
 #include <thrust/iterator/discard_iterator.h>
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/unique.h>

@@ -1,7 +1,7 @@
 #ifndef OPERATORS_H     
 #define OPERATORS_H
 
-#include <thrust\functional.h>
+#include <thrust/functional.h>
 
 struct CountNotZero : public thrust::unary_function<float, int> {
 	__host__ __device__
