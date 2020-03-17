@@ -17,6 +17,7 @@
 
 using namespace std;
 
+Graph::Graph() {};
 
 Graph::Graph(std::string name, bool weighted ) {
 	n_links = 0;

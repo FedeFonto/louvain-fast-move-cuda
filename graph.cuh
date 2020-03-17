@@ -21,7 +21,7 @@ struct Graph {
 	thrust::device_vector<int> edge_destination;
 	thrust::device_vector<float> weights;
 
-	Graph(){};
+	Graph();
 	Graph(std::string name, bool weighted);
 };
 
