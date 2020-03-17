@@ -4,7 +4,7 @@
 #include <vector>
 
 #define PRINT_DEBUG_LOG 1
-#define PRINT_PERFORMANCE_LOG 0
+#define PRINT_PERFORMANCE_LOG 1
 
 const int BLOCK_SIZE = 128;
 const int WARP_SIZE = 32;

@@ -85,7 +85,7 @@ struct Community {
 			thrust::plus<float>()
 		);
 
-		modularity = nodes_2_self_community / (2 * graph.total_weight) - community_tot / (4 * graph.total_weight * graph.total_weight);
+		modularity = nodes_2_self_community / (2 * graph.total_weight) - (community_tot)/ (4 * graph.total_weight * graph.total_weight);
 
 	}
 }; 
