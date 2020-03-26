@@ -1,12 +1,12 @@
 
 all: phaseOptimization.o
-	nvcc main.cu phaseOptimization.o graph.o -o app
+	nvcc -O3 main.cu phaseOptimization.o graph.o -o app
 
 phaseOptimization.o: graph.o
-	nvcc -dc phaseOptimization.cu
+	nvcc -dc -O3 phaseOptimization.cu 
 
 graph.o:
-	nvcc -dc graph.cu
+	nvcc -dc -O3 graph.cu
 
 clean:
 	rm -f *.o app

@@ -25,10 +25,10 @@ struct AggregationPhase {
 		#endif
 
 
-		Graph new_graph = Graph();
+		GraphDevice new_graph = GraphDevice();
 
 		int n_edge = community.graph.edge_source.size();
-		auto community_map = thrust::device_vector<int>(community.communities.size());
+		auto community_map = thrust::device_vector<unsigned int>(community.communities.size());
 
 		thrust::transform(
 			community.communities_weight.begin(),
@@ -37,6 +37,7 @@ struct AggregationPhase {
 			CountNotZero()
 		);
 
+	
 		//prefix sum
 		thrust::inclusive_scan(
 			community_map.begin(),
@@ -44,11 +45,10 @@ struct AggregationPhase {
 			community_map.begin()
 		);
 
-
 		new_graph.n_nodes = community_map[community_map.size() - 1];
 
-		auto edge_source = thrust::device_vector<int>(n_edge);
-		auto edge_destination = thrust::device_vector<int>(n_edge);
+		auto edge_source = thrust::device_vector<unsigned int>(n_edge);
+		auto edge_destination = thrust::device_vector<unsigned int>(n_edge);
 		auto weights = thrust::device_vector<float>(n_edge);
 
 		auto old_start = thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.begin(), community.graph.edge_destination.begin(), community.graph.weights.begin()));
@@ -124,7 +124,11 @@ struct AggregationPhase {
 
 		new_graph.total_weight = community.graph.total_weight;
 
-		community.update(new_graph);
+		community.update(&new_graph);
+
+#if PRINT_DEBUG_LOG
+		printf("Aggregation completed\n\n");
+#endif
 
 		#if PRINT_PERFORMANCE_LOG
 			cudaEventRecord(stop);

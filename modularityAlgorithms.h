@@ -6,22 +6,23 @@
 #include "phaseAggregation.cuh"
 
 struct ModularityAlgorithms {
-	static Community Louvain(Graph& graph, bool fastLocalMoveEnable) {
+	static Community Louvain(GraphHost& graph, bool fastLocalMoveEnable) {
 		return modularity_routine(graph, false, fastLocalMoveEnable);
 	};
 
-	static Community Laiden(Graph& graph) {
+	static Community Laiden(GraphHost& graph) {
 		return modularity_routine(graph, true, true);
 	}
 
 private:
-	static Community modularity_routine(Graph graph, bool isLaiden, bool fastLocalMove) {
+	static Community modularity_routine(GraphHost graph, bool isLaiden, bool fastLocalMove) {
+		Community C = Community(graph);
+
 		cudaEvent_t start, stop;
 		cudaEventCreate(&start);
 		cudaEventCreate(&stop);
-
 		cudaEventRecord(start);
-		Community C = Community(graph);
+
 		double old_modularity = 0;
 		do {
 			old_modularity = C.modularity;
@@ -31,12 +32,14 @@ private:
 			}
 			AggregationPhase::run(C);
 
-		} while (C.modularity - old_modularity >= MODULARITY_CONVERGED_THRESHOLD);
+		} while (C.modularity - old_modularity > MODULARITY_CONVERGED_THRESHOLD);
+
 		cudaEventRecord(stop);
 		cudaEventSynchronize(stop);
 		float milliseconds = 0;
 		cudaEventElapsedTime(&milliseconds, start, stop);
 		std::cout << "\nFinal Modularity: " << C.modularity << "\nTotal Execution Time: " << milliseconds << "ms" << std::endl;
+
 		return C;
 	}
 };

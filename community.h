@@ -9,12 +9,12 @@
 
 
 
-typedef thrust::zip_iterator<thrust::tuple<thrust::device_vector<int>::iterator, thrust::device_vector<int>::iterator, thrust::device_vector<float>::iterator>> zip_pointer;
+typedef thrust::zip_iterator<thrust::tuple<thrust::device_vector<unsigned int>::iterator, thrust::device_vector<unsigned int>::iterator, thrust::device_vector<float>::iterator>> zip_pointer;
 
 
 struct Community {
-	Graph graph;
-	thrust::device_vector<int> communities;
+	GraphDevice graph;
+	thrust::device_vector<unsigned int> communities;
 	thrust::device_vector<float> communities_weight;
 
 	zip_pointer start;
@@ -23,8 +23,8 @@ struct Community {
 	double modularity = -0.5;
 
 	
-	Community(Graph g) : graph(g) {
-		communities = thrust::device_vector<int>(graph.n_nodes);
+	Community(GraphHost g) : graph(g) {
+		communities = thrust::device_vector<unsigned int>(graph.n_nodes);
 		communities_weight = thrust::device_vector<float>(graph.n_nodes);
 		thrust::sequence(communities.begin(), communities.end(), 0);
 		thrust::copy(graph.tot_weight_per_nodes.begin(), graph.tot_weight_per_nodes.end(), communities_weight.begin());
@@ -33,9 +33,9 @@ struct Community {
 		compute_modularity();
 	};
 
-	void update(Graph g) {
-		graph = g;
-		communities = thrust::device_vector<int>(graph.n_nodes);
+	void update(GraphDevice* g) {
+		graph = *g;
+		communities = thrust::device_vector<unsigned int>(graph.n_nodes);
 		communities_weight = thrust::device_vector<float>(graph.n_nodes);
 		thrust::sequence(communities.begin(), communities.end(), 0);
 		thrust::copy(graph.tot_weight_per_nodes.begin(), graph.tot_weight_per_nodes.end(), communities_weight.begin());
@@ -47,12 +47,10 @@ struct Community {
 
 	void compute_modularity() {
 		//todo optimize
-		auto key_community_source = thrust::device_vector<int>(graph.n_links * 2);
-		auto key_community_dest = thrust::device_vector<int>(graph.n_links * 2);
-		auto key_community = thrust::make_zip_iterator(thrust::make_tuple(key_community_source.begin(), key_community_dest.begin()));
-
-
+		auto key_community_source = thrust::device_vector<unsigned int>(graph.n_links * 2);
+		auto key_community_dest = thrust::device_vector<unsigned int>(graph.n_links * 2);
 		auto values_weight = thrust::device_vector<float>(graph.n_links * 2);
+		
 		auto selected_edge = thrust::make_zip_iterator(thrust::make_tuple(key_community_source.begin(), key_community_dest.begin(), values_weight.begin()));
 
 		auto p = thrust::copy_if(
@@ -61,16 +59,6 @@ struct Community {
 			selected_edge,
 			ActualNeighboorhood(thrust::raw_pointer_cast(communities.data()))
 		);
-
-		/*printf("\n\nSTART");
-		for (int i = 0; i < graph.n_links; i++) {
-			int a = thrust::get<0>((thrust::tuple<int, int, float>) selected_edge[i]);
-			int ac = communities[thrust::get<0>((thrust::tuple<int, int, float>) selected_edge[i])];
-			int b = thrust::get<1>((thrust::tuple<int, int, float>) selected_edge[i]);
-			float c = thrust::get<2>((thrust::tuple<int, int, float>) selected_edge[i]);
-			printf("Node %d  Community %d In %d %.10f\n", a, ac, b, c);
-		}*/
-
 
 		double nodes_2_self_community = thrust::reduce(
 			values_weight.begin(),

@@ -338,3 +338,9 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/.vscode
+/app
+/com-orkut.ungraph.txt
+/graph-power-law-small.edge
+/soc-LiveJournal.txt
+*.o
