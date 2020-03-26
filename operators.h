@@ -12,47 +12,26 @@ struct CountNotZero : public thrust::unary_function<float, int> {
 	CountNotZero() {};
 };
 
-struct InWitchBucket : public thrust::unary_function<int, int> {
-	const int* range;
-	const int size;
-
-	__host__ __device__
-	int operator()(int x) {
-		for (int i = 0; i < size - 1;  i++) {
-			if (range[i] <= x && x < range[i + 1]) {
-				return i;
-			}
-		}
-		return size - 1;
-	};
-
-	InWitchBucket(const int* r, const int s) : range(r), size(s) {};
-};
-
-
-struct TestTupleValue : public thrust::unary_function<int, bool> {
-	int condition; 
-	int* buckets;
+struct TestTupleValue : public thrust::unary_function<thrust::tuple<unsigned int, unsigned int>, bool> {
 	bool* changed;
 
 	__host__ __device__
-	bool operator()(int t) {
-		bool test = condition == buckets[t] && changed[t];
-		if (test) {
-			changed[t] = false;
-		}
-		return test;
+	bool operator()(thrust::tuple<unsigned int, unsigned int> d) {
+		unsigned int source = thrust::get<0>(d);
+		unsigned int dest = thrust::get<1>(d);
+
+		return changed[source] && source != dest;
 	};
 
-	TestTupleValue(int* b, bool* c, int p) : buckets(b), changed(c) , condition(p) {};
+	TestTupleValue(bool* c) : changed(c) {};
 };
 
 
-struct MakeCommunityDest : public thrust::unary_function<thrust::tuple<int, int, float>, thrust::tuple<int, int, float>>{
-	int*  values;
+struct MakeCommunityDest : public thrust::unary_function<thrust::tuple<unsigned int, unsigned int, float>, thrust::tuple<unsigned int, unsigned int, float>>{
+	unsigned int*  values;
 
 	__host__ __device__
-	thrust::tuple<int, int, float> operator()(thrust::tuple<int, int, float> d) {
+		thrust::tuple<unsigned int, unsigned int, float> operator()(thrust::tuple<unsigned int, unsigned int, float> d) {
 		return thrust::make_tuple<int,int,float>(
 			thrust::get<0>(d),
 			values[thrust::get<1>(d)],
@@ -60,16 +39,16 @@ struct MakeCommunityDest : public thrust::unary_function<thrust::tuple<int, int,
 		);
 	};
 
-	MakeCommunityDest(int* v) : values(v){};
+	MakeCommunityDest(unsigned int* v) : values(v){};
 };
 
 
-struct MakeCommunityPair : public thrust::unary_function<thrust::tuple<int, int, float>, thrust::tuple<int, int, float>> {
-	int* communities;
-	int* map;
+struct MakeCommunityPair : public thrust::unary_function<thrust::tuple<unsigned int,unsigned int, float>, thrust::tuple<unsigned int, unsigned int, float>> {
+	unsigned int* communities;
+	unsigned int* map;
 
 	__host__ __device__
-		thrust::tuple<int, int, float> operator()(thrust::tuple<int, int, float> d) {
+		thrust::tuple<unsigned int, unsigned int, float> operator()(thrust::tuple<unsigned int, unsigned int, float> d) {
 		return thrust::make_tuple<int, int, float>(
 			map[communities[thrust::get<0>(d)] ]-1,
 			map[communities[thrust::get<1>(d)] ]-1,
@@ -77,15 +56,14 @@ struct MakeCommunityPair : public thrust::unary_function<thrust::tuple<int, int,
 			);
 	};
 
-	MakeCommunityPair(int* c, int* v) : communities(c), map(v) {};
+	MakeCommunityPair(unsigned int* c, unsigned int* v) : communities(c), map(v) {};
 };
 
 
-struct GetMaxValue : public thrust::binary_function<thrust::tuple<int, float>, thrust::tuple<int, float>, thrust::tuple<int, float>> {
+struct GetMaxValue : public thrust::binary_function<thrust::tuple<unsigned int, float>, thrust::tuple<unsigned int, float>, thrust::tuple<unsigned int, float>> {
 	__host__ __device__
-	thrust::tuple<int, float> operator()(thrust::tuple<int, float> a, thrust::tuple<int, float> b ) {
-		if (thrust::get<1>(b) > thrust::get<1>(a) 
-			|| (thrust::get<1>(b) == thrust::get<1>(a) && thrust::get<0>(a) > thrust::get<0>(b)))
+	thrust::tuple<unsigned int, float> operator()(thrust::tuple<unsigned int, float> a, thrust::tuple<unsigned int, float> b ) {
+		if (thrust::get<1>(b) > thrust::get<1>(a))
 			return b;
 		else
 			return a;
@@ -94,50 +72,36 @@ struct GetMaxValue : public thrust::binary_function<thrust::tuple<int, float>, t
 	GetMaxValue(){};
 };
 
-struct DeltaModularity : public thrust::unary_function <thrust::tuple<int, int, float>, float> {
+struct DeltaModularity : public thrust::unary_function <thrust::tuple<unsigned int, unsigned int, float>, float> {
 	float* community_weight;
 	float* nodes_weight;
 	float total_weight;
+	float* self_community;
+	unsigned int* communities;
 
 	__host__ __device__
-	float operator()(thrust::tuple<int, int, float> d) {
-		float value = ((thrust::get<2>(d)) / total_weight) +
-			(( nodes_weight[thrust::get<0>(d)] * -1 * community_weight[thrust::get<1>(d)]) / (2 * total_weight * total_weight));
+	float operator()(thrust::tuple<unsigned int, unsigned int, float> d) {
+		float value = ((thrust::get<2>(d) - self_community[thrust::get<0>(d)]) / total_weight) +
+			(( nodes_weight[thrust::get<0>(d)] * (community_weight[communities[thrust::get<0>(d)]] - nodes_weight[thrust::get<0>(d)] - community_weight[thrust::get<1>(d)])) / (2 * total_weight * total_weight));
 		return value;
 	};
 
-	DeltaModularity(float* w, float *n, float m) :
-		community_weight(w),nodes_weight(n),total_weight(m) {};
+	DeltaModularity(float* w, float *n, float m, float* s,unsigned int* c) :
+		community_weight(w),nodes_weight(n),total_weight(m),self_community(s), communities(c){};
 };
 
-struct ActualNeighboorhood : public thrust::unary_function <thrust::tuple<int, int, float>, bool> {
-	int* communities;
+struct ActualNeighboorhood : public thrust::unary_function <thrust::tuple<unsigned int, unsigned int, float>, bool> {
+	unsigned int* communities;
 
 	__host__ __device__
-	bool operator()(thrust::tuple<int, int, float> d) {
+	bool operator()(thrust::tuple<unsigned int, unsigned int, float> d) {
 		if (communities[thrust::get<0>(d)] == thrust::get<1>(d)) {
 			return true;
 		}
 		return false;
 	};
 
-	ActualNeighboorhood(int* c) : communities(c){}
-};
-
-struct ActualNeighboorhoodCopy : public thrust::unary_function <thrust::tuple<int, int, float>, bool> {
-	int* communities;
-	float* values;
-
-	__host__ __device__
-		bool operator()(thrust::tuple<int, int, float> d) {
-		if (communities[thrust::get<0>(d)] == thrust::get<1>(d)) {
-			values[thrust::get<0>(d)] = thrust::get<2>(d);
-			return true;
-		}
-		return false;
-	};
-
-	ActualNeighboorhoodCopy(int* c, float* v) : communities(c), values(v) {}
+	ActualNeighboorhood(unsigned int* c) : communities(c){}
 };
 
 struct MyUtils {
