@@ -1,0 +1,328 @@
+Start Parsing...
+N of edges and links obtained
+Graph Host created! 
+Start Optimization Algorithm...
+
+Number of Edges selected: 13999896 / 13999896 (100 %)
+ - Copy Time : 7.06042ms
+ - Sort Time : 34.4488ms
+ - Reduce after sort time : 5.89917ms
+ - Obtain self communities : 0.967776ms
+ - Transform Time : 3.46938ms
+ - Reduce after transform Time : 2.13379ms
+ - Kernel Update Time : 0.572672ms
+ - Kernel Changed Time : 1.24387ms
+Optimization Time: 55.7959ms 
+
+
+Number of Edges nob si se ho voglia di selected: 13999896 / 13999896 (100 %)
+ - Copy Time : 8.47584ms
+ - Sort Time : 33.7927ms
+ - Reduce after sort time : 5.8055ms
+ - Obtain self communities : 0.916768ms
+ - Transform Time : 2.48832ms
+ - Reduce after transform Time : 1.52813ms
+ - Kernel Update Time : 0.702144ms
+ - Kernel Changed Time : 0.888832ms
+Optimization Time: 54.5982ms 
+
+
+Number of Edges selected: 13997789 / 13999896 (99.9849 %)
+ - Copy Time : 7.17056ms
+ - Sort Time : 31.8916ms
+ - Reduce after sort time : 5.51482ms
+ - Obtain self communities : 0.618944ms
+ - Transform Time : 3.0343ms
+ - Reduce after transform Time : 1.12749ms
+ - Kernel Update Time : 0.592896ms
+ - Kernel Changed Time : 0.793312ms
+Optimization Time: 50.7439ms 
+
+
+Number of Edges selected: 13973212 / 13999896 (99.8094 %)
+ - Copy Time : 7.85126ms
+ - Sort Time : 32.3655ms
+ - Reduce after sort time : 4.71411ms
+ - Obtain self communities : 0.579328ms
+ - Transform Time : 1.70416ms
+ - Reduce after transform Time : 1.02224ms
+ - Kernel Update Time : 0.49984ms
+ - Kernel Changed Time : 0.768ms
+Optimization Time: 49.5045ms 
+
+
+Number of Edges selected: 13792403 / 13999896 (98.5179 %)
+ - Copy Time : 7.2297ms
+ - Sort Time : 3nob si se ho voglia di 0.9737ms
+ - Reduce after sort time : 4.60845ms
+ - Obtain self communities : 0.552512ms
+ - Transform Time : 1.6343ms
+ - Reduce after transform Time : 1.37341ms
+ - Kernel Update Time : 0.4104ms
+ - Kernel Changed Time : 0.77824ms
+Optimization Time: 47.5607ms 
+
+
+Number of Edges selected: 13417230 / 13999896 (95.8381 %)
+ - Copy Time : 7.19053ms
+ - Sort Time : 29.5245ms
+ - Reduce after sort time : 4.55046ms
+ - Obtain self communities : 0.500288ms
+ - Transform Time : 1.25088ms
+ - Reduce after transform Time : 0.879136ms
+ - Kernel Update Time : 0.3536ms
+ - Kernel Changed Time : 0.786368ms
+Optimization Time: 45.0358ms 
+
+
+Number of Edges selected: 12901219 / 13999896 (92.1523 %)
+ - Copy Time : 7.80768ms
+ - Sort Time : 28.3661ms
+ - Reduce after sort time : 4.52157ms
+ - Obtain self communities : 0.483744ms
+ - Transform Time : 1.09354ms
+ - Reduce after transform Time : 0.809056ms
+ - Kernel Update Time : 0.3072ms
+ - Kernel Changed Time : 0.790528ms
+Optimization Time: 44.1795ms 
+
+
+Number of Edges selected: 12292543 / 13999896 (87.8045 %)
+ - Copy Time : 7.1023ms
+ - Sort Time : 25.957ms
+ - Reduce after sort time : 4.98451ms
+ - Obtain self communities : 0.483552ms
+ - Transform Time : 1.03632ms
+ - Reduce after transform Time : 0.791808ms
+ - Kernel Update Time : 0.27936ms
+ - Kernel Changed Time : 0.786528ms
+Optimization Time: 41.4213ms 
+
+
+Number of Edges selected: 11702476 / 13999896 (83.5897 %)
+ - Copy Time : 7.65206ms
+ - Sort Time : 26.9407ms
+ - Reduce after sort time : 4.24352ms
+ - Obtain self communities : 0.442048ms
+ - Transform Time : 1.0711ms
+ - Reduce after transform Time : 0.836096ms
+ - Kernel Update Time : 0.235264ms
+ - Kernel Changed Time : 0.780288ms
+Optimization Time: 42.2011ms 
+
+
+Number of Edges selected: 11143311 / 13999896 (79.5957 %)
+ - Copy Time : 7.61242ms
+ - Sort Time : 25.447ms
+ - Reduce after sort time : 4.43091ms
+ - Obtain self communities : 0.498176ms
+ - Transform Time : 0.811456ms
+ - Reduce after transform Time : 0.75424ms
+ - Kernel Update Time : 0.216512ms
+ - Kernel Changed Time : 0.769728ms
+Optimization Time: 40.5404ms 
+
+
+Number of Edges selected: 10597686 / 13999896 (75.6983 %)
+ - Copy Time : 7.76845ms
+ - Sort Time : 23.6909ms
+ - Reduce after sort time : 3.65754ms
+ - Obtain self communities : 0.396608ms
+ - Transform Time : 0.705408ms
+ - Reduce after transform Time : 0.58048ms
+ - Kernel Update Time : 0.572544ms
+ - Kernel Changed Time : 1.27386ms
+Optimization Time: 38.6458ms 
+
+
+Number of Edges selected: 10073373 / 13999896 (71.9532 %)
+ - Copy Time : 6.82026ms
+ - Sort Time : 23.314ms
+ - Reduce after sort time : 3.8568ms
+ - Obtain self communities : 0.396608ms
+ - Transform Time : 0.671296ms
+ - Reduce after transform Time : 0.651424ms
+ - Kernel Update Time : 0.188992ms
+ - Kernel Changed Time : 0.862208ms
+Optimization Time: 36.7616ms 
+
+
+Number of Edges selected: 9588961 / 13999896 (68.4931 %)
+ - Copy Time : 6.8305ms
+ - Sort Time : 19.7833ms
+ - Reduce after sort time : 3.36413ms
+ - Obtain self communities : 0.381664ms
+ - Transform Time : 0.620544ms
+ - Reduce after transform Time : 0.746304ms
+ - Kernel Update Time : 0.176768ms
+ - Kernel Changed Time : 0.766112ms
+Optimization Time: 32.6693ms 
+
+
+Number of Edges selected: 9157626 / 13999896 (65.4121 %)
+ - Copy Time : 7.08285ms
+ - Sort Time : 18.6646ms
+ - Reduce after sort time : 3.32909ms
+ - Obtain self communities : 0.426944ms
+ - Transform Time : 0.574976ms
+ - Reduce after transform Time : 0.779552ms
+ - Kernel Update Time : 0.168672ms
+ - Kernel Changed Time : 0.764416ms
+Optimization Time: 31.7911ms 
+
+
+Number of Edges selected: 8777235 / 13999896 (62.695 %)
+ - Copy Time : 6.80403ms
+ - Sort Time : 17.7699ms
+ - Reduce after sort time : 3.28262ms
+ - Obtain self communities : 0.366336ms
+ - Transform Time : 0.55968ms
+ - Reduce after transform Time : 0.586912ms
+ - Kernel Update Time : 0.182464ms
+ - Kernel Changed Time : 0.76848ms
+Optimization Time: 30.3204ms 
+
+
+Number of Edges selected: 8372127 / 13999896 (59.8014 %)
+ - Copy Time : 6.78922ms
+ - Sort Time : 31.6828ms
+ - Reduce after sort time : 3.0297ms
+ - Obtain self communities : 0.358336ms
+ - Transform Time : 0.50176ms
+ - Reduce after transform Time : 0.5552ms
+ - Kernel Update Time : 0.163648ms
+ - Kernel Changed Time : 0.709824ms
+Optimization Time: 43.7905ms 
+
+Total Optimization Time : 812.245ms
+
+Aggregation Time : 48.9383ms
+
+Number of Edges selected: 1434146 / 1465135 (97.8849 %)
+ - Copy Time : 3.4391ms
+ - Sort Time : 3.34243ms
+ - Reduce after sort time : 1.23408ms
+ - Obtain self communities : 0.138304ms
+ - Transform Time : 0.19456ms
+ - Reduce after transform Time : 0.226944ms
+ - Kernel Update Time : 0.04928ms
+ - Kernel Changed Time : 0.106752ms
+Optimization Time: 8.73146ms 
+
+
+Number of Edges selected: 1434146 / 1465135 (97.8849 %)
+ - Copy Time : 0.835456ms
+ - Sort Time : 2.50275ms
+ - Reduce after sort time : 0.972064ms
+ - Obtain self communities : 0.128256ms
+ - Transform Time : 0.235232ms
+ - Reduce after transform Time : 0.197888ms
+ - Kernel Update Time : 0.074496ms
+ - Kernel Changed Time : 0.127104ms
+Optimization Time: 5.07325ms 
+
+
+Number of Edges selected: 1434136 / 1465135 (97.8842 %)
+ - Copy Time : 0.685248ms
+ - Sort Time : 2.46662ms
+ - Reduce after sort time : 0.9168ms
+ - Obtain self communities : 0.103104ms
+ - Transform Time : 0.124928ms
+ - Reduce after transform Time : 0.144768ms
+ - Kernel Update Time : 0.055936ms
+ - Kernel Changed Time : 0.105824ms
+Optimization Time: 4.60323ms 
+
+
+Number of Edges selected: 1433274 / 1465135 (97.8254 %)
+ - Copy Time : 0.748896ms
+ - Sort Time : 2.43594ms
+ - Reduce after sort time : 0.897888ms
+ - Obtain self communities : 0.09392ms
+ - Transform Time : 0.104448ms
+ - Reduce after transform Time : 0.125472ms
+ - Kernel Update Time : 0.052352ms
+ - Kernel Changed Time : 0.108896ms
+Optimization Time: 4.56781ms 
+
+
+Number of Edges selected: 1425671 / 1465135 (97.3065 %)
+ - Copy Time : 0.857696ms
+ - Sort Time : 2.59318ms
+ - Reduce after sort time : 0.816224ms
+ - Obtain self communities : 0.11472ms
+ - Transform Time : 0.107104ms
+ - Reduce after transform Time : 0.145504ms
+ - Kernel Update Time : 0.069344ms
+ - Kernel Changed Time : 0.124768ms
+Optimization Time: 4.82854ms 
+
+
+Number of Edges selected: 1405878 / 1465135 (95.9555 %)
+ - Copy Time : 0.763264ms
+ - Sort Time : 2.30883ms
+ - Reduce after sort time : 0.882496ms
+ - Obtain self communities : 0.114592ms
+ - Transform Time : 0.106592ms
+ - Reduce after transform Time : 0.14624ms
+ - Kernel Update Time : 0.066944ms
+ - Kernel Changed Time : 0.12656ms
+Optimization Time: 4.51552ms 
+
+
+Number of Edges selected: 1382448 / 1465135 (94.3564 %)
+ - Copy Time : 0.686624ms
+ - Sort Time : 2.32774ms
+ - Reduce after sort time : 0.82992ms
+ - Obtain self communities : 0.108128ms
+ - Transform Time : 0.082656ms
+ - Reduce after transform Time : 0.109248ms
+ - Kernel Update Time : 0.051744ms
+ - Kernel Changed Time : 0.106272ms
+Optimization Time: 4.30234ms 
+
+
+Number of Edges selected: 1360712 / 1465135 (92.8728 %)
+ - Copy Time : 0.844512ms
+ - Sort Time : 2.38326ms
+ - Reduce after sort time : 0.73168ms
+ - Obtain self communities : 0.08528ms
+ - Transform Time : 0.08416ms
+ - Reduce after transform Time : 0.119584ms
+ - Kernel Update Time : 0.062336ms
+ - Kernel Changed Time : 0.121056ms
+Optimization Time: 4.43187ms 
+
+
+Number of Edges selected: 1341298 / 1465135 (91.5477 %)
+ - Copy Time : 0.767968ms
+ - Sort Time : 2.3231ms
+ - Reduce after sort time : 0.748384ms
+ - Obtain self communities : 0.110016ms
+ - Transform Time : 0.098304ms
+ - Reduce after transform Time : 0.138944ms
+ - Kernel Update Time : 0.076096ms
+ - Kernel Changed Time : 0.124928ms
+Optimization Time: 4.38774ms 
+
+Total Optimization Time : 61.6598ms
+
+Aggregation Time : 5.10467ms
+
+Number of Edges selected: 88332 / 90364 (97.7513 %)
+ - Copy Time : 0.08096ms
+ - Sort Time : 0.525568ms
+ - Reduce after sort time : 0.33184ms
+ - Obtain self communities : 0.089632ms
+ - Transform Time : 0.073504ms
+ - Reduce after transform Time : 0.107776ms
+ - Kernel Update Time : 0.068032ms
+ - Kernel Changed Time : 0.070592ms
+Optimization Time: 1.3479ms 
+
+Total Optimization Time : 1.84822ms
+
+Final Modularity: 0.81369
+Total Execution Time: 932.067ms
+
+Press enter to continue...

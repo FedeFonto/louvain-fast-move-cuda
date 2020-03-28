@@ -64,7 +64,7 @@ public:
 			cudaEventSynchronize(stop);
 			float milliseconds = 0;
 			cudaEventElapsedTime(&milliseconds, start, stop);
-			std::cout << "Optimization Time : " << milliseconds << "ms" << std::endl;		
+			std::cout << "Total Optimization Time : " << milliseconds << "ms" << std::endl;		
 		#endif
 	}
 };

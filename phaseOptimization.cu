@@ -101,18 +101,24 @@ void OptimizationPhase::optimize() {
 		TestTupleValue(thrust::raw_pointer_cast(neighboorhood_change.data()))
 	);
 
+	int n_edge_in_buckets = p - selected_edge;
+	key_community_source.resize(n_edge_in_buckets);
+	key_community_dest.resize(n_edge_in_buckets);
+	values_weight.resize(n_edge_in_buckets);
+
 #if PRINT_PERFORMANCE_LOG
 		cudaEventRecord(copy);
 		cudaEventSynchronize(copy);
 		float milliseconds = 0;
 		cudaEventElapsedTime(&milliseconds, start, copy);
+#if CSV_FORM
+		std::cout << n_edge_in_buckets << "," << community.graph.edge_source.size() << "," << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << ",";
+		std::cout << milliseconds << ",";
+#else
+		std::cout << "\nNumber of Edges selected: " << n_edge_in_buckets << " / " << community.graph.edge_source.size() << " (" << (float) n_edge_in_buckets / community.graph.edge_source.size() * 100 << " %)" << std::endl;
 		std::cout << " - Copy Time : " << milliseconds << "ms" << std::endl;
 #endif
-
-	int n_edge_in_buckets = p - selected_edge;
-	key_community_source.resize(n_edge_in_buckets);
-	key_community_dest.resize(n_edge_in_buckets);
-	values_weight.resize(n_edge_in_buckets);
+#endif
 
 	if (n_edge_in_buckets == 0) {
 #if PRINT_DEBUG_LOG
@@ -131,7 +137,11 @@ void OptimizationPhase::optimize() {
 	cudaEventRecord(sort);
 	cudaEventSynchronize(sort);
 	cudaEventElapsedTime(&milliseconds, copy, sort);
+#if CSV_FORM
+	std::cout << milliseconds << ",";
+#else
 	std::cout << " - Sort Time : " << milliseconds << "ms" << std::endl;
+#endif
 #endif
 
 	auto reduced_key_source = thrust::device_vector<unsigned int>(n_edge_in_buckets);
@@ -154,7 +164,11 @@ void OptimizationPhase::optimize() {
 	cudaEventRecord(reduce_sort);
 	cudaEventSynchronize(reduce_sort);
 	+cudaEventElapsedTime(&milliseconds, sort, reduce_sort);
-	std::cout << " - Reduce after sort Time : " << milliseconds << "ms" << std::endl;
+#if CSV_FORM
+	std::cout << milliseconds << ",";
+#else
+	std::cout << " - Reduce after sort time : " << milliseconds << "ms" << std::endl;
+#endif
 #endif
 
 	auto n_reduced_edges = new_end.first - reduced_key;
@@ -180,7 +194,11 @@ void OptimizationPhase::optimize() {
 	cudaEventRecord(self_c);
 	cudaEventSynchronize(self_c);
 	cudaEventElapsedTime(&milliseconds, reduce_sort, self_c);
-	std::cout << " - Reduce after transform Time : " << milliseconds << "ms" << std::endl;
+#if CSV_FORM
+	std::cout << milliseconds << ",";
+#else
+	std::cout << " - Obtain self communities : " << milliseconds << "ms" << std::endl;
+#endif
 #endif
 
 	thrust::transform(
@@ -204,7 +222,11 @@ void OptimizationPhase::optimize() {
 	cudaEventRecord(transform);
 	cudaEventSynchronize(transform);
 	cudaEventElapsedTime(&milliseconds, self_c, transform);
+#if CSV_FORM
+	std::cout << milliseconds << ",";
+#else
 	std::cout << " - Transform Time : " << milliseconds << "ms" << std::endl;
+#endif
 #endif
 
 		
@@ -226,7 +248,11 @@ void OptimizationPhase::optimize() {
 	cudaEventRecord(reduce_transform);
 	cudaEventSynchronize(reduce_transform);
 	cudaEventElapsedTime(&milliseconds, transform, reduce_transform);
+#if CSV_FORM
+	std::cout << milliseconds << ",";
+#else
 	std::cout << " - Reduce after transform Time : " << milliseconds << "ms" << std::endl;
+#endif
 #endif
 
 	n_reduced_edges = ne.first - key_community_source.begin();
@@ -247,7 +273,11 @@ void OptimizationPhase::optimize() {
 	cudaEventRecord(kernel_update);
 	cudaEventSynchronize(kernel_update);
 	cudaEventElapsedTime(&milliseconds, reduce_transform, kernel_update);
+#if CSV_FORM
+	std::cout << milliseconds << ",";
+#else
 	std::cout << " - Kernel Update Time : " << milliseconds << "ms" << std::endl;
+#endif
 #endif
 
 
@@ -268,9 +298,15 @@ void OptimizationPhase::optimize() {
 	cudaEventRecord(stop);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&milliseconds, kernel_update, stop);
+#if CSV_FORM
+	std::cout << milliseconds << ",";
+	cudaEventElapsedTime(&milliseconds, start, stop);
+	std::cout << milliseconds << std::endl;
+#else
 	std::cout << " - Kernel Changed Time : " << milliseconds << "ms" << std::endl;
 	cudaEventElapsedTime(&milliseconds, start, stop);
-	std::cout << "Total Optimization Time: " << milliseconds << "ms \n" << std::endl;
+	std::cout << "Optimization Time: " << milliseconds << "ms \n" << std::endl;
+#endif
 #endif
 }
 

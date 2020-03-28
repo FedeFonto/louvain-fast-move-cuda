@@ -135,7 +135,7 @@ struct AggregationPhase {
 			cudaEventSynchronize(stop);
 			float milliseconds = 0;
 			cudaEventElapsedTime(&milliseconds, start, stop);
-			std::cout << "Aggregation Time : " << milliseconds << "ms" << std::endl;
+			std::cout << "\nAggregation Time : " << milliseconds << "ms" << std::endl;
 		#endif
 	}
 };

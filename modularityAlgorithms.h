@@ -23,16 +23,20 @@ private:
 		cudaEventCreate(&stop);
 		cudaEventRecord(start);
 
-		double old_modularity = 0;
-		do {
+		double old_modularity = C.modularity;
+		OptimizationPhase::run(C, fastLocalMove || isLaiden);
+		/*if (isLaiden) {
+			RefinePhase::run();
+		}*/
+
+		while( C.modularity - old_modularity > MODULARITY_CONVERGED_THRESHOLD ) {
+			AggregationPhase::run(C);
 			old_modularity = C.modularity;
 			OptimizationPhase::run(C, fastLocalMove || isLaiden);
-			if (isLaiden) {
+			/*if (isLaiden) {
 				RefinePhase::run();
-			}
-			AggregationPhase::run(C);
-
-		} while (C.modularity - old_modularity > MODULARITY_CONVERGED_THRESHOLD);
+			}*/
+		};
 
 		cudaEventRecord(stop);
 		cudaEventSynchronize(stop);
