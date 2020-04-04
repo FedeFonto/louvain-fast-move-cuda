@@ -344,3 +344,7 @@ healthchecksdb
 /graph-power-law-small.edge
 /soc-LiveJournal.txt
 *.o
+
+result.txt
+
+result1.txt

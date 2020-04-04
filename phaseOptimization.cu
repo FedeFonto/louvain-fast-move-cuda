@@ -127,12 +127,27 @@ void OptimizationPhase::optimize() {
 		return;
 	}
 
-	thrust::sort_by_key(
-		key_community,
-		key_community + n_edge_in_buckets,
-		values_weight.begin()
-	);
 
+	int step = 10000000;
+	for (int off = 0; off < n_edge_in_buckets; off += step) {
+		int limit = off + step;
+		if (limit >= n_edge_in_buckets) {
+			limit = n_edge_in_buckets;
+		}
+		else {
+			limit += community.graph.n_of_neighboor[key_community_source[limit]];
+			if (limit >= n_edge_in_buckets) {
+				limit = n_edge_in_buckets;
+			}
+		}
+		thrust::sort_by_key(
+			key_community + off,
+			key_community + limit,
+			values_weight.begin()
+		);
+		
+	}
+	
 #if PRINT_PERFORMANCE_LOG
 	cudaEventRecord(sort);
 	cudaEventSynchronize(sort);
