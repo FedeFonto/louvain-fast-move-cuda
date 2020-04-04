@@ -104,6 +104,16 @@ struct ActualNeighboorhood : public thrust::unary_function <thrust::tuple<unsign
 	ActualNeighboorhood(unsigned int* c) : communities(c){}
 };
 
+template<typename T>
+struct Square : public thrust::unary_function<T, T> {
+	__host__ __device__
+	T operator()(T d) {
+		return d * d;
+	};
+
+	Square() {};
+};
+
 struct MyUtils {
 	static void print_memory_usage() {
 		// show memory usage of GPU

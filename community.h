@@ -68,7 +68,7 @@ struct Community {
 		double community_tot = thrust::transform_reduce(
 			communities_weight.begin(),
 			communities_weight.end(),
-			thrust::square<float>(),
+			Square<float>(),
 			0,
 			thrust::plus<float>()
 		);
