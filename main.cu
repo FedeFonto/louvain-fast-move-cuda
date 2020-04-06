@@ -2,7 +2,6 @@
 
 int main()
 {
-    //MyUtils::print_memory_usage();
 
     GraphHost g = GraphHost::GraphHost("graph-power-law-huge-2.edge", false);
 

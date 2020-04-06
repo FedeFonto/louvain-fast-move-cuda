@@ -128,7 +128,7 @@ struct MyUtils {
 		double free_db = (double)free_byte;
 		double total_db = (double)total_byte;
 		double used_db = total_db - free_db;
-		printf("\n GPU memory usage: used = %f, free = %f MB, total = %f MB\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
+		printf("\n GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
 
 	};
 };
