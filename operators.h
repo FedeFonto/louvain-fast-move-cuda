@@ -60,6 +60,18 @@ struct MakeCommunityPair : public thrust::unary_function<thrust::tuple<unsigned 
 };
 
 
+struct MakeCommunityBest : public thrust::unary_function<unsigned int, unsigned int> {
+	unsigned int* map;
+	unsigned int* communities;
+
+	__host__ __device__
+		unsigned int operator()(unsigned int d) {
+		return map[communities[d]] - 1;
+	};
+
+	MakeCommunityBest(unsigned int* c, unsigned int* v) : communities(c), map(v) {};
+};
+
 struct GetMaxValue : public thrust::binary_function<thrust::tuple<unsigned int, float>, thrust::tuple<unsigned int, float>, thrust::tuple<unsigned int, float>> {
 	__host__ __device__
 	thrust::tuple<unsigned int, float> operator()(thrust::tuple<unsigned int, float> a, thrust::tuple<unsigned int, float> b ) {
