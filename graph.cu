@@ -14,30 +14,35 @@
 using namespace std;
 
 
-GraphHost::GraphHost(std::string name, bool weighted ) {
-	n_links = 0;
-
+GraphHost::GraphHost(std::string name, bool weighted) {
 	ifstream f;
 	f.open(name);
 
 	int a, b;
-	auto node_map = set<int>();
+	auto node_set = set<int>();
+	auto edge_set = set<pair<int, int>>();
 
 	printf("Start Parsing...\n");
 
 	if (weighted) {
 		//todo parsing 
-	} else {
+	}
+	else {
 		while (f >> a >> b) {
-			node_map.insert(a);
-			node_map.insert(b);
-			n_links++;
+			node_set.insert(a);
+			node_set.insert(b);
+			if (a > b) {
+				edge_set.insert(std::pair<int, int>(b, a));
+			}
+			else {
+				edge_set.insert(std::pair<int, int>(a, b));
+			}
 		}
 	}
 
-	n_nodes = node_map.size();
+	n_links = edge_set.size();
+	n_nodes = node_set.size();
 	f.clear();
-	f.seekg(0, ios::beg);
 
 	if (n_nodes == 0) {
 		std::cout << "Error during parsing: no node found" << std::endl;
@@ -55,13 +60,13 @@ GraphHost::GraphHost(std::string name, bool weighted ) {
 		//todo parsing 
 	}
 	else {
-		while (f >> a >> b) {
-			edge_source[i] = a;
-			edge_destination[i] = b;
+		for (std::set<pair<int, int>>::iterator it = edge_set.begin(); it != edge_set.end(); ++it) {
+			edge_source[i] = it->first;
+			edge_destination[i] = it->second;
 			weights[i] = 1;
 
-			edge_source[i + 1] = b;
-			edge_destination[i + 1] = a;
+			edge_source[i + 1] = it->second;
+			edge_destination[i + 1] = it->first;
 			weights[i + 1] = 1;
 
 			i += 2;
