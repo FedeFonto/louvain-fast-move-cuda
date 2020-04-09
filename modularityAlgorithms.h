@@ -18,7 +18,6 @@ private:
 	static Community modularity_routine(GraphHost graph, bool isLaiden, bool fastLocalMove) {
 		Community C = Community(graph);
 
-		MyUtils::print_memory_usage();
 		cudaEvent_t start, stop;
 		cudaEventCreate(&start);
 		cudaEventCreate(&stop);
