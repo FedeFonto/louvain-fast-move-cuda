@@ -102,7 +102,7 @@ struct AggregationPhase {
 
 			community.graph.tot_weight_per_nodes = thrust::device_vector<float>(community.graph.n_nodes);
 
-			auto value_input = thrust::make_zip_iterator(thrust::make_tuple(community.graph.weights.begin(), thrust::make_constant_iterator(1)));
+			auto value_input = thrust::make_zip_iterator(thrust::make_tuple(community.graph.weights.begin(), thrust::make_constant_iterator((unsigned int) 1)));
 			auto value_output = thrust::make_zip_iterator(thrust::make_tuple(community.graph.tot_weight_per_nodes.begin(), community.graph.n_of_neighboor.begin()));
 
 
