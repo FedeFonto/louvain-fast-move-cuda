@@ -48,8 +48,7 @@ struct Community {
 		);
 	}
 
-	void update_graph(GraphDevice* g) {
-		graph = *g;
+	void update() {
 		communities = thrust::device_vector<unsigned int>(graph.n_nodes);
 		communities_weight = thrust::device_vector<float>(graph.n_nodes);
 		thrust::sequence(communities.begin(), communities.end(), 0);

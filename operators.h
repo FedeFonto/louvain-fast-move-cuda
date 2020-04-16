@@ -116,6 +116,15 @@ struct ActualNeighboorhood : public thrust::unary_function <thrust::tuple<unsign
 	ActualNeighboorhood(unsigned int* c) : communities(c){}
 };
 
+template<typename T1, typename T2>
+struct PairSum : public thrust::binary_function < thrust::tuple<T1, T2>, thrust::tuple<T1, T2>, thrust::tuple<T1, T2>>{
+
+	__host__ __device__
+	thrust::tuple<T1, T2> operator()(thrust::tuple<T1, T2> P1, thrust::tuple<T1, T2> P2) {
+		return thrust::make_tuple(thrust::get<0>(P1) + thrust::get<0>(P2), thrust::get<1>(P1) + thrust::get<1>(P2));
+	};
+};
+
 template<typename T>
 struct Square : public thrust::unary_function<T, T> {
 	__host__ __device__

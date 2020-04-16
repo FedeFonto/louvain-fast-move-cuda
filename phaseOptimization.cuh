@@ -15,13 +15,32 @@
 class OptimizationPhase {
 private:
 	thrust::device_vector<bool> neighboorhood_change;
+
+	thrust::device_vector<unsigned int> key_node_source;
+	thrust::device_vector<unsigned int> key_community_dest;
+	thrust::device_vector<float> values_weight;
+
+	thrust::device_vector<unsigned int> reduced_key_source;
+	thrust::device_vector<unsigned int> reduced_key_dest;
+	thrust::device_vector<float> reduced_value;
+
 	Community& community;
 	int execution_number = 0;
 
 
 	OptimizationPhase(Community& c) :
 		neighboorhood_change(thrust::device_vector<bool>(c.graph.n_nodes, true)),
-		community(c){}
+		community(c){
+	
+		key_node_source = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
+		key_community_dest = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
+		values_weight = thrust::device_vector<float>(community.graph.edge_source);
+
+		reduced_key_source = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
+		reduced_key_dest = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
+		reduced_value = thrust::device_vector<float>(community.graph.edge_source.size());
+
+	}
 
 	void optimize();
 
@@ -31,8 +50,8 @@ private:
 		float delta = 0;
 
 		do {
-			execution_number++;
 			old_modularity = community.modularity;
+			execution_number++;
 			optimize();
 			community.compute_modularity();
 			delta = community.modularity - old_modularity;
