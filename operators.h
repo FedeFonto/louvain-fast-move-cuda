@@ -60,6 +60,18 @@ struct MakeCommunityPair : public thrust::unary_function<thrust::tuple<unsigned 
 };
 
 
+struct MakeCommunityBest : public thrust::unary_function<unsigned int, unsigned int> {
+	unsigned int* map;
+	unsigned int* communities;
+
+	__host__ __device__
+		unsigned int operator()(unsigned int d) {
+		return map[communities[d]] - 1;
+	};
+
+	MakeCommunityBest(unsigned int* c, unsigned int* v) : communities(c), map(v) {};
+};
+
 struct GetMaxValue : public thrust::binary_function<thrust::tuple<unsigned int, float>, thrust::tuple<unsigned int, float>, thrust::tuple<unsigned int, float>> {
 	__host__ __device__
 	thrust::tuple<unsigned int, float> operator()(thrust::tuple<unsigned int, float> a, thrust::tuple<unsigned int, float> b ) {
@@ -104,6 +116,25 @@ struct ActualNeighboorhood : public thrust::unary_function <thrust::tuple<unsign
 	ActualNeighboorhood(unsigned int* c) : communities(c){}
 };
 
+template<typename T1, typename T2>
+struct PairSum : public thrust::binary_function < thrust::tuple<T1, T2>, thrust::tuple<T1, T2>, thrust::tuple<T1, T2>>{
+
+	__host__ __device__
+	thrust::tuple<T1, T2> operator()(thrust::tuple<T1, T2> P1, thrust::tuple<T1, T2> P2) {
+		return thrust::make_tuple(thrust::get<0>(P1) + thrust::get<0>(P2), thrust::get<1>(P1) + thrust::get<1>(P2));
+	};
+};
+
+template<typename T>
+struct Square : public thrust::unary_function<T, T> {
+	__host__ __device__
+	T operator()(T d) {
+		return d * d;
+	};
+
+	Square() {};
+};
+
 struct MyUtils {
 	static void print_memory_usage() {
 		// show memory usage of GPU
@@ -118,7 +149,7 @@ struct MyUtils {
 		double free_db = (double)free_byte;
 		double total_db = (double)total_byte;
 		double used_db = total_db - free_db;
-		printf("\n GPU memory usage: used = %f, free = %f MB, total = %f MB\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
+		printf("\n GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
 
 	};
 };

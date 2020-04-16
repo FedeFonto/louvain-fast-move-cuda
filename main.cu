@@ -2,9 +2,8 @@
 
 int main()
 {
-    //MyUtils::print_memory_usage();
 
-    GraphHost g = GraphHost::GraphHost("graph-power-law-huge-2.edge", false);
+    GraphHost g = GraphHost::GraphHost("soc-LiveJournal.txt", false);
 
     printf("Start Optimization Algorithm...\n");
     auto C = ModularityAlgorithms::Laiden(g);

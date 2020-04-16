@@ -17,6 +17,8 @@ struct Community {
 	thrust::device_vector<unsigned int> communities;
 	thrust::device_vector<float> communities_weight;
 
+	thrust::device_vector<unsigned int> best_communities;
+
 	zip_pointer start;
 	zip_pointer end;
 
@@ -28,13 +30,25 @@ struct Community {
 		communities_weight = thrust::device_vector<float>(graph.n_nodes);
 		thrust::sequence(communities.begin(), communities.end(), 0);
 		thrust::copy(graph.tot_weight_per_nodes.begin(), graph.tot_weight_per_nodes.end(), communities_weight.begin());
+
+		best_communities = thrust::device_vector<unsigned int>(graph.n_nodes);
+		thrust::sequence(best_communities.begin(), best_communities.end(), 0);
+
 		start = thrust::make_zip_iterator(thrust::make_tuple(graph.edge_source.begin(), graph.edge_destination.begin(), graph.weights.begin()));
 		end = thrust::make_zip_iterator(thrust::make_tuple(graph.edge_source.end(), graph.edge_destination.end(), graph.weights.end()));
 		compute_modularity();
 	};
 
-	void update(GraphDevice* g) {
-		graph = *g;
+	void update_best(unsigned int* map) {
+		thrust::transform(
+			best_communities.begin(),
+			best_communities.end(),
+			best_communities.begin(),
+			MakeCommunityBest(thrust::raw_pointer_cast(communities.data()), map)
+		);
+	}
+
+	void update() {
 		communities = thrust::device_vector<unsigned int>(graph.n_nodes);
 		communities_weight = thrust::device_vector<float>(graph.n_nodes);
 		thrust::sequence(communities.begin(), communities.end(), 0);
@@ -68,7 +82,7 @@ struct Community {
 		double community_tot = thrust::transform_reduce(
 			communities_weight.begin(),
 			communities_weight.end(),
-			thrust::square<float>(),
+			Square<float>(),
 			0,
 			thrust::plus<float>()
 		);
