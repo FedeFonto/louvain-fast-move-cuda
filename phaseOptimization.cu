@@ -69,9 +69,6 @@ void update_changed_kernel(
 }
 
 void OptimizationPhase::optimize() {
-
-	auto its_changed = thrust::device_vector<bool>(community.graph.n_nodes, false);
-
 #if PRINT_PERFORMANCE_LOG
 		cudaEvent_t start, copy, sort, reduce_sort, self_c, transform, reduce_transform, kernel_update, stop;
 		cudaEventCreate(&start);
@@ -85,7 +82,7 @@ void OptimizationPhase::optimize() {
 		cudaEventCreate(&stop);
 		cudaEventRecord(start);
 #endif
-
+	auto its_changed = thrust::device_vector<bool>(community.graph.n_nodes, false);
 
 	auto key_community = thrust::make_zip_iterator(thrust::make_tuple(key_node_source.begin(), key_community_dest.begin()));
 	auto selected_edge = thrust::make_zip_iterator(thrust::make_tuple(key_node_source.begin(), key_community_dest.begin(), values_weight.begin()));
@@ -140,7 +137,7 @@ void OptimizationPhase::optimize() {
 		thrust::sort_by_key(
 			key_community + off,
 			key_community + limit,
-			values_weight.begin()
+			values_weight.begin() + off
 		);
 		
 	}

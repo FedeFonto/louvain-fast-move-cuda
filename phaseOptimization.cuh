@@ -50,8 +50,8 @@ private:
 		float delta = 0;
 
 		do {
-			execution_number++;
 			old_modularity = community.modularity;
+			execution_number++;
 			optimize();
 			community.compute_modularity();
 			delta = community.modularity - old_modularity;
