@@ -5,7 +5,6 @@ int main()
 
     GraphHost g = GraphHost::GraphHost("soc-LiveJournal.txt", false);
 
-    printf("Start Optimization Algorithm...\n");
     auto C = ModularityAlgorithms::Laiden(g);
     do
     {

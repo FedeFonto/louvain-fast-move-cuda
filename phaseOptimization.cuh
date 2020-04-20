@@ -51,8 +51,8 @@ private:
 
 		do {
 			old_modularity = community.modularity;
+			optimize();	
 			execution_number++;
-			optimize();
 			community.compute_modularity();
 			delta = community.modularity - old_modularity;
 		

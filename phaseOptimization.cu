@@ -87,6 +87,8 @@ void OptimizationPhase::optimize() {
 	auto key_community = thrust::make_zip_iterator(thrust::make_tuple(key_node_source.begin(), key_community_dest.begin()));
 	auto selected_edge = thrust::make_zip_iterator(thrust::make_tuple(key_node_source.begin(), key_community_dest.begin(), values_weight.begin()));
 
+	int n_edge_in_buckets;
+
 	auto p = thrust::copy_if(
 		thrust::make_transform_iterator(community.start, MakeCommunityDest(thrust::raw_pointer_cast(community.communities.data()))),
 		thrust::make_transform_iterator(community.end, MakeCommunityDest(thrust::raw_pointer_cast(community.communities.data()))),
@@ -95,22 +97,25 @@ void OptimizationPhase::optimize() {
 		TestTupleValue(thrust::raw_pointer_cast(neighboorhood_change.data()))
 	);
 
-	int n_edge_in_buckets = p - selected_edge;
+	n_edge_in_buckets = p - selected_edge;
+	
+	
 	key_node_source.resize(n_edge_in_buckets);
 	key_community_dest.resize(n_edge_in_buckets);
 	values_weight.resize(n_edge_in_buckets);
 
+
 #if PRINT_PERFORMANCE_LOG
-		cudaEventRecord(copy);
-		cudaEventSynchronize(copy);
-		float milliseconds = 0;
-		cudaEventElapsedTime(&milliseconds, start, copy);
+	cudaEventRecord(copy);
+	cudaEventSynchronize(copy);
+	float milliseconds = 0;
+	cudaEventElapsedTime(&milliseconds, start, copy);
 #if CSV_FORM
-		std::cout << n_edge_in_buckets << "," << community.graph.edge_source.size() << "," << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << ",";
-		std::cout << milliseconds << ",";
+	std::cout << n_edge_in_buckets << "," << community.graph.edge_source.size() << "," << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << ",";
+	std::cout << milliseconds << ",";
 #else
-		std::cout << "\nNumber of Edges selected: " << n_edge_in_buckets << " / " << community.graph.edge_source.size() << " (" << (float) n_edge_in_buckets / community.graph.edge_source.size() * 100 << " %)" << std::endl;
-		std::cout << " - Copy Time : " << milliseconds << "ms" << std::endl;
+	std::cout << "\nNumber of Edges selected: " << n_edge_in_buckets << " / " << community.graph.edge_source.size() << " (" << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << " %)" << std::endl;
+	std::cout << " - Copy Time : " << milliseconds << "ms" << std::endl;
 #endif
 #endif
 
@@ -121,26 +126,28 @@ void OptimizationPhase::optimize() {
 		return;
 	}
 
-
-	int step = 10000000;
-	for (int off = 0; off < n_edge_in_buckets; off += step) {
-		int limit = off + step;
-		if (limit >= n_edge_in_buckets) {
-			limit = n_edge_in_buckets;
-		}
-		else {
-			limit += community.graph.n_of_neighboor[key_node_source[limit]];
+	if (execution_number > 0) {
+		int step = 10000000;
+		for (int off = 0; off < n_edge_in_buckets; off += step) {
+			int limit = off + step;
 			if (limit >= n_edge_in_buckets) {
 				limit = n_edge_in_buckets;
 			}
+			else {
+				limit += community.graph.n_of_neighboor[key_node_source[limit]];
+				if (limit >= n_edge_in_buckets) {
+					limit = n_edge_in_buckets;
+				}
+			}
+			thrust::sort_by_key(
+				key_community + off,
+				key_community + limit,
+				values_weight.begin() + off
+			);
+
 		}
-		thrust::sort_by_key(
-			key_community + off,
-			key_community + limit,
-			values_weight.begin() + off
-		);
-		
 	}
+
 	
 #if PRINT_PERFORMANCE_LOG
 	cudaEventRecord(sort);
