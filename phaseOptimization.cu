@@ -127,7 +127,12 @@ void OptimizationPhase::optimize() {
 	}
 
 	if (execution_number > 0) {
-		int step = 10000000;
+		cudaStream_t streams[N_STREAM];
+		for (int i = 0; i < N_STREAM; i++)
+			cudaStreamCreate(&streams[i]);
+
+		int step = 5000000;
+		int i = 0;
 		for (int off = 0; off < n_edge_in_buckets; off += step) {
 			int limit = off + step;
 			if (limit >= n_edge_in_buckets) {
@@ -140,10 +145,12 @@ void OptimizationPhase::optimize() {
 				}
 			}
 			thrust::sort_by_key(
+				thrust::cuda::par.on(streams[i%N_STREAM]),
 				key_community + off,
 				key_community + limit,
 				values_weight.begin() + off
 			);
+			i++;
 
 		}
 	}
