@@ -27,7 +27,6 @@ private:
 	Community& community;
 	int execution_number = 0;
 
-
 	OptimizationPhase(Community& c) :
 		neighboorhood_change(thrust::device_vector<bool>(c.graph.n_nodes, true)),
 		community(c){
@@ -39,7 +38,6 @@ private:
 		reduced_key_source = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
 		reduced_key_dest = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
 		reduced_value = thrust::device_vector<float>(community.graph.edge_source.size());
-
 	}
 
 	void optimize();
