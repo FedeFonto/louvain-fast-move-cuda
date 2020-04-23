@@ -24,6 +24,10 @@ private:
 	thrust::device_vector<unsigned int> reduced_key_dest;
 	thrust::device_vector<float> reduced_value;
 
+	thrust::device_vector<unsigned int> final_node;
+	thrust::device_vector<unsigned int> final_community;
+	thrust::device_vector<float> final_value;
+
 	Community& community;
 	int execution_number = 0;
 
@@ -31,13 +35,17 @@ private:
 		neighboorhood_change(thrust::device_vector<bool>(c.graph.n_nodes, true)),
 		community(c){
 	
-		key_node_source = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
-		key_community_dest = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
-		values_weight = thrust::device_vector<float>(community.graph.edge_source);
+		key_node_source = thrust::device_vector<unsigned int>(STEP_ROUND);
+		key_community_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
+		values_weight = thrust::device_vector<float>(STEP_ROUND);
 
-		reduced_key_source = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
-		reduced_key_dest = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
-		reduced_value = thrust::device_vector<float>(community.graph.edge_source.size());
+		reduced_key_source = thrust::device_vector<unsigned int>(STEP_ROUND);
+		reduced_key_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
+		reduced_value = thrust::device_vector<float>(STEP_ROUND);
+
+		final_node = thrust::device_vector<unsigned int>(c.graph.n_nodes);
+		final_community = thrust::device_vector<unsigned int>(c.graph.n_nodes);
+		final_value = thrust::device_vector<float>(c.graph.n_nodes);
 	}
 
 	void optimize();
