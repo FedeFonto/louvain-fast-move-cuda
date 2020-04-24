@@ -108,7 +108,7 @@ void OptimizationPhase::optimize() {
 			limit_round = community.graph.edge_destination.size();
 		}
 		else {
-			limit_round = community.graph.neighboorhood_sum[community.graph.edge_source[limit_round]];
+			limit_round = community.graph.neighboorhood_sum[community.graph.edge_source[limit_round]-1];
 		}
 
 		auto key_community = thrust::make_zip_iterator(thrust::make_tuple(key_node_source.begin(), key_community_dest.begin()));
@@ -125,7 +125,6 @@ void OptimizationPhase::optimize() {
 		);
 
 		n_edge_in_buckets = p - selected_edge;
-
 
 		key_node_source.resize(n_edge_in_buckets);
 		key_community_dest.resize(n_edge_in_buckets);
