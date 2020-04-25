@@ -43,7 +43,7 @@ struct GraphDevice {
 		n_of_neighboor = g.n_of_neighboor;
 	};
 
-	GraphDevice(GraphHost g) {
+	GraphDevice(GraphHost& g) {
 		n_nodes = g.n_nodes;
 		n_links = g.n_links;
 		total_weight = g.total_weight;
