@@ -43,6 +43,7 @@ struct AggregationPhase {
 		);
 
 		community.update_best(thrust::raw_pointer_cast(community_map.data()));
+		community.n_of_best_communities = community_map.back();
 
 		if (aggregate) {
 			community.graph.n_nodes = community_map[community_map.size() - 1];

@@ -9,5 +9,6 @@ int main()
     cudaProfilerStart();
     auto C = ModularityAlgorithms::Laiden(g); 
     cudaProfilerStop();
+    std::cout<< "N of community found:" << C.n_of_best_communities << std::endl;
     return 0;
 }
