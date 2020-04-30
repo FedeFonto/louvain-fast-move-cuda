@@ -5,6 +5,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
+#include "hashmap.cuh"
 
 __global__
 void select_self_node(
@@ -70,10 +71,11 @@ void update_changed_kernel(
 
 void OptimizationPhase::optimize() {
 #if PRINT_PERFORMANCE_LOG
-	cudaEvent_t start, round_start, copy, sort, reduce_sort, self_c, transform, reduce_transform, kernel_update, stop;
+	cudaEvent_t start, round_start, copy, map, sort, reduce_sort, self_c, transform, reduce_transform, kernel_update, stop;
 	cudaEventCreate(&round_start);
 	cudaEventCreate(&start);
 	cudaEventCreate(&copy);
+	cudaEventCreate(&map);
 	cudaEventCreate(&sort);
 	cudaEventCreate(&reduce_sort);
 	cudaEventCreate(&self_c);
@@ -89,6 +91,7 @@ void OptimizationPhase::optimize() {
 	int limit_round;
 	int save_position = 0;
 	int round = 0;
+	auto h = HashMap();
 
 	
 	while ( round < community.graph.edge_destination.size()) {
@@ -130,7 +133,6 @@ void OptimizationPhase::optimize() {
 		key_community_dest.resize(n_edge_in_buckets);
 		values_weight.resize(n_edge_in_buckets);
 
-
 #if PRINT_PERFORMANCE_LOG
 		cudaEventRecord(copy);
 		cudaEventSynchronize(copy);
@@ -139,10 +141,26 @@ void OptimizationPhase::optimize() {
 		std::cout << n_edge_in_buckets << "," << community.graph.edge_source.size() << "," << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << ",";
 		std::cout << milliseconds << ",";
 #else
+
 		std::cout << "\nNumber of Edges selected: " << n_edge_in_buckets << " / " << community.graph.edge_source.size() << " (" << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << " %)" << std::endl;
 		std::cout << " - Copy Time : " << milliseconds << "ms" << std::endl;
 #endif
 #endif
+		h.fill(thrust::raw_pointer_cast(key_node_source.data()), thrust::raw_pointer_cast(key_community_dest.data()), thrust::raw_pointer_cast(values_weight.data()), n_edge_in_buckets);
+
+
+#if PRINT_PERFORMANCE_LOG
+		cudaEventRecord(map);
+		cudaEventSynchronize(map);
+		cudaEventElapsedTime(&milliseconds, copy, map);
+#if CSV_FORM
+		std::cout << milliseconds << ",";
+#else
+
+		std::cout << " - Hashmap Time : " << milliseconds << "ms" << std::endl;
+#endif
+#endif
+
 
 		if (n_edge_in_buckets == 0) {
 #if PRINT_DEBUG_LOG
@@ -178,7 +196,7 @@ void OptimizationPhase::optimize() {
 #if PRINT_PERFORMANCE_LOG
 		cudaEventRecord(sort);
 		cudaEventSynchronize(sort);
-		cudaEventElapsedTime(&milliseconds, copy, sort);
+		cudaEventElapsedTime(&milliseconds, map, sort);
 #if CSV_FORM
 		std::cout << milliseconds << ",";
 #else

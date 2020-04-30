@@ -110,6 +110,7 @@
     <ClInclude Include="community.h" />
     <ClInclude Include="graph.cuh" />
     <ClInclude Include="graphHost.cuh" />
+    <ClInclude Include="hashmap.cuh" />
     <ClInclude Include="modularityAlgorithms.h" />
     <ClInclude Include="operators.h" />
     <ClInclude Include="phaseAggregation.cuh" />

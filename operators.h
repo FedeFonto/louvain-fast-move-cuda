@@ -12,6 +12,15 @@ struct CountNotZero : public thrust::unary_function<float, int> {
 	CountNotZero() {};
 };
 
+struct NotNegative : public thrust::unary_function<float, bool> {
+	__host__ __device__
+		bool operator()(float x) {
+		return x >= 0;
+	}
+
+	NotNegative() {};
+};
+
 struct TestTupleValue : public thrust::unary_function<thrust::tuple<unsigned int, unsigned int>, bool> {
 	bool* changed;
 
