@@ -22,6 +22,7 @@ struct Community {
 	zip_pointer start;
 	zip_pointer end;
 
+	unsigned int n_of_best_communities;
 	double modularity = -0.5;
 	cudaStream_t streams[2];
 
@@ -30,7 +31,7 @@ struct Community {
 	Community(GraphHost& g) : graph(g) {
 		cudaStreamCreate(&streams[0]);
 		cudaStreamCreate(&streams[1]);
-
+		n_of_best_communities = graph.n_nodes;
 		communities = thrust::device_vector<unsigned int>(graph.n_nodes);
 		communities_weight = thrust::device_vector<float>(graph.n_nodes);
 		thrust::sequence(thrust::cuda::par.on(streams[0]), communities.begin(), communities.end(), 0);

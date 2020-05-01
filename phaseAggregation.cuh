@@ -43,6 +43,7 @@ struct AggregationPhase {
 		);
 
 		community.update_best(thrust::raw_pointer_cast(community_map.data()));
+		community.n_of_best_communities = community_map.back();
 
 		if (aggregate) {
 			community.graph.n_nodes = community_map[community_map.size() - 1];
@@ -105,6 +106,9 @@ struct AggregationPhase {
 			auto value_input = thrust::make_zip_iterator(thrust::make_tuple(community.graph.weights.begin(), thrust::make_constant_iterator((unsigned int) 1)));
 			auto value_output = thrust::make_zip_iterator(thrust::make_tuple(community.graph.tot_weight_per_nodes.begin(), community.graph.n_of_neighboor.begin()));
 
+			community.graph.n_of_neighboor.resize(community.graph.n_nodes);
+			community.graph.tot_weight_per_nodes.resize(community.graph.n_nodes);
+			community.graph.neighboorhood_sum.resize(community.graph.n_nodes);
 
 			thrust::reduce_by_key(
 				community.graph.edge_source.begin(),
@@ -114,6 +118,13 @@ struct AggregationPhase {
 				value_output,
 				thrust::equal_to<unsigned int>(),
 				PairSum<float,unsigned int>()
+			);
+
+
+			thrust::exclusive_scan(
+				community.graph.n_of_neighboor.begin(),
+				community.graph.n_of_neighboor.end(),
+				community.graph.neighboorhood_sum.begin()
 			);
 
 			community.graph.total_weight = community.graph.total_weight;

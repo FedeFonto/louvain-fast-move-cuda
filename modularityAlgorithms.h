@@ -15,7 +15,7 @@ struct ModularityAlgorithms {
 	}
 
 private:
-	static Community modularity_routine(GraphHost graph, bool isLaiden, bool fastLocalMove) {
+	static Community modularity_routine(GraphHost& graph, bool isLaiden, bool fastLocalMove) {
 		printf("Creating Device Graph..\n");
 		Community C = Community(graph);
 
