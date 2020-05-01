@@ -7,8 +7,8 @@
 
 __device__
 static inline int hash_position(int k1, int k2, int i) {
-	long long l =  i*(((long long) k1) << 32) | k2;
-	return l % 334214459  % BUCKETS_SIZE;
+	long long l =  (((long long) k1) << 32) | k2;
+	return (3*(i+1) * l + 7* (i+1)) % 334214459  % BUCKETS_SIZE;
 };
 
 
