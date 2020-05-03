@@ -91,11 +91,11 @@ void OptimizationPhase::optimize() {
 	int limit_round;
 	int save_position = 0;
 	int round = 0;
-	auto h = HashMap();
 
-	
-	while ( round < community.graph.edge_destination.size()) {
+	while (round < community.graph.edge_destination.size()) {
 #if PRINT_PERFORMANCE_LOG
+		auto h = HashMap();
+
 		cudaEventRecord(round_start);
 #endif
 		key_node_source.resize(STEP_ROUND);
@@ -111,7 +111,7 @@ void OptimizationPhase::optimize() {
 			limit_round = community.graph.edge_destination.size();
 		}
 		else {
-			limit_round = community.graph.neighboorhood_sum[community.graph.edge_source[limit_round]-1];
+			limit_round = community.graph.neighboorhood_sum[community.graph.edge_source[limit_round] - 1];
 		}
 
 		auto key_community = thrust::make_zip_iterator(thrust::make_tuple(key_node_source.begin(), key_community_dest.begin()));
@@ -139,15 +139,18 @@ void OptimizationPhase::optimize() {
 		cudaEventElapsedTime(&milliseconds, round_start, copy);
 #if CSV_FORM
 		std::cout << n_edge_in_buckets << "," << community.graph.edge_source.size() << "," << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << ",";
-		std::cout << milliseconds << ",";
 #else
 
 		std::cout << "\nNumber of Edges selected: " << n_edge_in_buckets << " / " << community.graph.edge_source.size() << " (" << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << " %)" << std::endl;
 		std::cout << " - Copy Time : " << milliseconds << "ms" << std::endl;
 #endif
 #endif
-		h.fill(thrust::raw_pointer_cast(key_node_source.data()), thrust::raw_pointer_cast(key_community_dest.data()), thrust::raw_pointer_cast(values_weight.data()), n_edge_in_buckets);
+		h.fill(	thrust::raw_pointer_cast(key_node_source.data()),
+				thrust::raw_pointer_cast(key_community_dest.data()),
+				thrust::raw_pointer_cast(values_weight.data()), 
+				n_edge_in_buckets);
 
+		h.resize();
 
 #if PRINT_PERFORMANCE_LOG
 		cudaEventRecord(map);
@@ -167,9 +170,9 @@ void OptimizationPhase::optimize() {
 			printf("No elements!\n");
 #endif 
 			return;
-	}
+		}
 
-		if (execution_number > 0) {
+		if (true) {
 			int step = 5000000;
 			int i = 0;
 			for (int off = 0; off < n_edge_in_buckets; off += step) {
@@ -198,7 +201,6 @@ void OptimizationPhase::optimize() {
 		cudaEventSynchronize(sort);
 		cudaEventElapsedTime(&milliseconds, map, sort);
 #if CSV_FORM
-		std::cout << milliseconds << ",";
 #else
 		std::cout << " - Sort Time : " << milliseconds << "ms" << std::endl;
 #endif
@@ -215,18 +217,20 @@ void OptimizationPhase::optimize() {
 			reduced_value.begin()
 		);
 
+		auto n_reduced_edges = new_end.first - reduced_key;
+
+
 #if PRINT_PERFORMANCE_LOG
 		cudaEventRecord(reduce_sort);
 		cudaEventSynchronize(reduce_sort);
-		cudaEventElapsedTime(&milliseconds, sort, reduce_sort);
+		cudaEventElapsedTime(&milliseconds, map, reduce_sort);
 #if CSV_FORM
-		std::cout << milliseconds << ",";
+		std::cout << milliseconds << std::endl;
 #else
 		std::cout << " - Reduce after sort time : " << milliseconds << "ms" << std::endl;
 #endif
 #endif
 
-		auto n_reduced_edges = new_end.first - reduced_key;
 		reduced_key_source.resize(n_reduced_edges);
 		reduced_key_dest.resize(n_reduced_edges);
 		reduced_value.resize(n_reduced_edges);
@@ -250,7 +254,7 @@ void OptimizationPhase::optimize() {
 		cudaEventSynchronize(self_c);
 		cudaEventElapsedTime(&milliseconds, reduce_sort, self_c);
 #if CSV_FORM
-		std::cout << milliseconds << ",";
+
 #else
 		std::cout << " - Obtain self communities : " << milliseconds << "ms" << std::endl;
 #endif
@@ -277,8 +281,8 @@ void OptimizationPhase::optimize() {
 		cudaEventRecord(transform);
 		cudaEventSynchronize(transform);
 		cudaEventElapsedTime(&milliseconds, self_c, transform);
-#if CSV_FORM
-		std::cout << milliseconds << ",";
+#if CSV_FORM 
+
 #else
 		std::cout << " - Transform Time : " << milliseconds << "ms" << std::endl;
 #endif
@@ -299,7 +303,7 @@ void OptimizationPhase::optimize() {
 			GetMaxValue()
 		);
 
-		save_position = ne.first - final_node.begin() ;
+		save_position = ne.first - final_node.begin();
 		round = limit_round;
 
 #if PRINT_PERFORMANCE_LOG
@@ -307,35 +311,35 @@ void OptimizationPhase::optimize() {
 		cudaEventSynchronize(reduce_transform);
 		cudaEventElapsedTime(&milliseconds, transform, reduce_transform);
 #if CSV_FORM
-		std::cout << milliseconds << "," << std::endl;
+
 #else
 		std::cout << " - Reduce after transform Time : " << milliseconds << "ms" << std::endl;
 #endif
 #endif
-}
+	}
 
-int n_blocks = (save_position + BLOCK_SIZE - 1) / BLOCK_SIZE;
+	int n_blocks = (save_position + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
 
-update_value_kernel << <n_blocks, BLOCK_SIZE >> > (
-	save_position,
-	thrust::raw_pointer_cast(final_node.data()),
-	thrust::raw_pointer_cast(final_community.data()),
-	thrust::raw_pointer_cast(final_value.data()),
-	thrust::raw_pointer_cast(community.communities.data()),
-	thrust::raw_pointer_cast(community.communities_weight.data()),
-	thrust::raw_pointer_cast(community.graph.tot_weight_per_nodes.data()),
-	thrust::raw_pointer_cast(its_changed.data())
-	);
+	update_value_kernel << <n_blocks, BLOCK_SIZE >> > (
+		save_position,
+		thrust::raw_pointer_cast(final_node.data()),
+		thrust::raw_pointer_cast(final_community.data()),
+		thrust::raw_pointer_cast(final_value.data()),
+		thrust::raw_pointer_cast(community.communities.data()),
+		thrust::raw_pointer_cast(community.communities_weight.data()),
+		thrust::raw_pointer_cast(community.graph.tot_weight_per_nodes.data()),
+		thrust::raw_pointer_cast(its_changed.data())
+		);
 
 #if PRINT_PERFORMANCE_LOG
-cudaEventRecord(kernel_update);
-cudaEventSynchronize(kernel_update);
-cudaEventElapsedTime(&milliseconds, reduce_transform, kernel_update);
+	cudaEventRecord(kernel_update);
+	cudaEventSynchronize(kernel_update);
+	cudaEventElapsedTime(&milliseconds, reduce_transform, kernel_update);
 #if CSV_FORM
-std::cout << milliseconds << ",";
+
 #else
-std::cout << " - Kernel Update Time : " << milliseconds << "ms" << std::endl;
+	std::cout << " - Kernel Update Time : " << milliseconds << "ms" << std::endl;
 #endif
 #endif
 
@@ -349,7 +353,7 @@ std::cout << " - Kernel Update Time : " << milliseconds << "ms" << std::endl;
 		thrust::raw_pointer_cast(community.graph.edge_source.data()),
 		thrust::raw_pointer_cast(community.graph.edge_destination.data()),
 		community.graph.edge_source.size()
-	);
+		);
 
 
 #if PRINT_PERFORMANCE_LOG
@@ -357,9 +361,7 @@ std::cout << " - Kernel Update Time : " << milliseconds << "ms" << std::endl;
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&milliseconds, kernel_update, stop);
 #if CSV_FORM
-	std::cout << milliseconds << ",";
-	cudaEventElapsedTime(&milliseconds, start, stop);
-	std::cout << milliseconds << std::endl;
+
 #else
 	std::cout << " - Kernel Changed Time : " << milliseconds << "ms" << std::endl;
 	cudaEventElapsedTime(&milliseconds, start, stop);
