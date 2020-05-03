@@ -8,7 +8,7 @@
 #include <thrust/partition.h>
 #include <thrust/copy.h>
 
-
+const int max_tentative = 100;
 
 __device__
 static inline int hash_position(unsigned long long l, int i) {
@@ -19,7 +19,6 @@ static inline int hash_position(unsigned long long l, int i) {
 __device__
 bool insertHashTable(unsigned int k1,unsigned int k2, float v, unsigned long long* pointer_k, float* pointer_v, int* c) {
 	unsigned long long l = (((unsigned long long) k1) << 32) | k2;
-	const int max_tentative = 1000;
 	bool f = true;
 
 	for (int i = 0; i < max_tentative; i++) {
@@ -40,10 +39,13 @@ bool insertHashTable(unsigned int k1,unsigned int k2, float v, unsigned long lon
 };
 
 __global__
-void kernel(unsigned int* k1, unsigned int* k2, float* v, int n_of_elem , unsigned long long* pointer_k1, float* pointer_v, int*c) {
+void kernel(unsigned int* k1, unsigned int* k2, float* v, int n_of_elem , unsigned long long* pointer_k1, float* pointer_v, int*c, float* self, unsigned int* communities) {
 	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
 	if (id < n_of_elem) {
-		bool b = insertHashTable(k1[id], k2[id], v[id], pointer_k1, pointer_v, c);
+		if (communities[k1[id]] == k2[id])
+			atomicAdd(&self[k1[id]], v[id]);
+		else
+			bool b = insertHashTable(k1[id], k2[id], v[id], pointer_k1, pointer_v, c);
 	}
 };
 
@@ -54,16 +56,20 @@ struct HashMap {
 	thrust::device_vector<unsigned long long> key = thrust::device_vector<unsigned long long>(BUCKETS_SIZE, FLAG);
 	thrust::device_vector<float> values = thrust::device_vector<float>(BUCKETS_SIZE, 0);
 
-	unsigned long long* pointer_k1 = thrust::raw_pointer_cast(key.data());
+	thrust::device_vector<float> self_community;
+
+
+	unsigned long long* pointer_k = thrust::raw_pointer_cast(key.data());
 	float* pointer_v = thrust::raw_pointer_cast(values.data());
 	thrust::device_vector<int> c = thrust::device_vector<int>(3);
 
-	void fill(unsigned int* k1, unsigned int* k2, float* v, int n_of_elem) {
+	void fill(unsigned int* k1, unsigned int* k2, float* v, int n_of_elem, int n_nodes, unsigned int* communities) {
 		int n_blocks = (n_of_elem + BLOCK_SIZE - 1) / BLOCK_SIZE;
 		clear();
-		kernel << <n_blocks, BLOCK_SIZE >> > (k1, k2, v, n_of_elem, pointer_k1, pointer_v, thrust::raw_pointer_cast(c.data()));
-		std::cout << c[0] << ", " << (float)c[0] / n_of_elem << ", " << (float)c[1] / n_of_elem << ", " << c[2] << ",";
+		self_community = thrust::device_vector<float>(n_nodes);
+		kernel << <n_blocks, BLOCK_SIZE >> > (k1, k2, v, n_of_elem, pointer_k, pointer_v, thrust::raw_pointer_cast(c.data()), thrust::raw_pointer_cast(self_community.data()), communities);
 	}
+
 
 	int resize() {
 		auto pair = thrust::make_zip_iterator(thrust::make_tuple(key.begin(), values.begin()));

@@ -20,7 +20,8 @@ struct Equals : public thrust::unary_function<T, bool> {
 		return x == value;
 	}
 
-	Equals(T v) {};
+	Equals(T v) : value(v) {};
+
 };
 
 struct TestTupleValue : public thrust::unary_function<thrust::tuple<unsigned int, unsigned int>, bool> {
@@ -95,7 +96,7 @@ struct GetMaxValue : public thrust::binary_function<thrust::tuple<unsigned int, 
 	GetMaxValue(){};
 };
 
-struct DeltaModularity : public thrust::unary_function <thrust::tuple<unsigned int, unsigned int, float>, float> {
+struct DeltaModularity : public thrust::unary_function <thrust::tuple<unsigned long long, float>, float> {
 	float* community_weight;
 	float* nodes_weight;
 	float total_weight;
@@ -103,9 +104,12 @@ struct DeltaModularity : public thrust::unary_function <thrust::tuple<unsigned i
 	unsigned int* communities;
 
 	__host__ __device__
-	float operator()(thrust::tuple<unsigned int, unsigned int, float> d) {
-		float value = ((thrust::get<2>(d) - self_community[thrust::get<0>(d)]) / total_weight) +
-			(( nodes_weight[thrust::get<0>(d)] * (community_weight[communities[thrust::get<0>(d)]] - nodes_weight[thrust::get<0>(d)] - community_weight[thrust::get<1>(d)])) / (2 * total_weight * total_weight));
+	float operator()(thrust::tuple<unsigned long long, float> d) {
+		const unsigned int node = (thrust::get<0>(d) >> 32);
+		const unsigned int community = thrust::get<0>(d);
+
+		float value = ((thrust::get<1>(d) - self_community[node]) / total_weight) +
+			(( nodes_weight[node] * (community_weight[communities[node]] - nodes_weight[node] - community_weight[community])) / (2 * total_weight * total_weight));
 		return value;
 	};
 

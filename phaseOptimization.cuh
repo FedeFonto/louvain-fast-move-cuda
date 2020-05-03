@@ -20,11 +20,6 @@ private:
 	thrust::device_vector<unsigned int> key_community_dest;
 	thrust::device_vector<float> values_weight;
 
-	thrust::device_vector<unsigned int> reduced_key_source;
-	thrust::device_vector<unsigned int> reduced_key_dest;
-	thrust::device_vector<float> reduced_value;
-
-	thrust::device_vector<unsigned int> final_node;
 	thrust::device_vector<unsigned int> final_community;
 	thrust::device_vector<float> final_value;
 
@@ -39,13 +34,8 @@ private:
 		key_community_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
 		values_weight = thrust::device_vector<float>(STEP_ROUND);
 
-		reduced_key_source = thrust::device_vector<unsigned int>(STEP_ROUND);
-		reduced_key_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
-		reduced_value = thrust::device_vector<float>(STEP_ROUND);
-
-		final_node = thrust::device_vector<unsigned int>(c.graph.n_nodes);
-		final_community = thrust::device_vector<unsigned int>(c.graph.n_nodes);
-		final_value = thrust::device_vector<float>(c.graph.n_nodes);
+		final_community = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
+		final_value = thrust::device_vector<float>(c.graph.n_nodes, -1);
 	}
 
 	void optimize();
