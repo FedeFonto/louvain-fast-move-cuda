@@ -48,52 +48,40 @@ struct AggregationPhase {
 		if (aggregate) {
 			community.graph.n_nodes = community_map[community_map.size() - 1];
 
-			auto edge_source = thrust::device_vector<unsigned int>(n_edge);
-			auto edge_destination = thrust::device_vector<unsigned int>(n_edge);
-			auto weights = thrust::device_vector<float>(n_edge);
+			HashMap h = HashMap(community.graph.edge_destination.size() + community.graph.edge_destination.size() / 3);
 
-			auto old_start = thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.begin(), community.graph.edge_destination.begin(), community.graph.weights.begin()));
-			auto old_end = thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.end(), community.graph.edge_destination.end(), community.graph.weights.end()));
-			auto new_start = thrust::make_zip_iterator(thrust::make_tuple(edge_source.begin(), edge_destination.begin(), weights.begin()));
-
-			thrust::transform(
-				old_start,
-				old_end,
-				new_start,
-				MakeCommunityPair(thrust::raw_pointer_cast(community.communities.data()), thrust::raw_pointer_cast(community_map.data()))
+			h.fill_for_aggregation(
+				thrust::raw_pointer_cast(community.graph.edge_source.data()),
+				thrust::raw_pointer_cast(community.graph.edge_destination.data()),
+				thrust::raw_pointer_cast(community.graph.weights.data()),
+				community.graph.edge_source.size(),
+				thrust::raw_pointer_cast(community.communities.data()),
+				thrust::raw_pointer_cast(community_map.data())
 			);
 
-			auto pair_iterator = thrust::make_zip_iterator(thrust::make_tuple(edge_source.begin(), edge_destination.begin()));
+			auto n_reduced_edges = h.resize();
 
 			thrust::sort_by_key(
-				pair_iterator,
-				pair_iterator + n_edge,
-				weights.begin()
+				h.key.begin(),
+				h.key.begin() + n_reduced_edges,
+				h.values.begin()
 			);
 
-			community.graph.edge_source = thrust::device_vector<int>(n_edge);
-			community.graph.edge_destination = thrust::device_vector<int>(n_edge);
-			community.graph.weights = thrust::device_vector<float>(n_edge);
+			community.graph.edge_source = thrust::device_vector<int>(n_reduced_edges);
+			community.graph.edge_destination = thrust::device_vector<int>(n_reduced_edges);
+			community.graph.weights = thrust::device_vector<float>(n_reduced_edges);
 
-			auto reduced_pair_iterator = thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.begin(), community.graph.edge_destination.begin()));
+			auto zip = thrust::make_zip_iterator(thrust::make_tuple(h.key.begin(), h.values.begin()));
+			auto iter = thrust::make_transform_iterator(zip, SplitIterator());
+			thrust::copy(iter, iter + n_reduced_edges, community.start);
 
-			auto new_end = thrust::reduce_by_key(
-				pair_iterator,
-				pair_iterator + n_edge,
-				weights.begin(),
-				reduced_pair_iterator,
-				community.graph.weights.begin()
-			);
-
-			auto n_reduced_edges = new_end.first - reduced_pair_iterator;
-
-			//printf("\n\nSTART");
-			//for (int i = 0; i < n_reduced_edges; i++) {
-			//	int a = thrust::get<0>((thrust::tuple<int, int>) reduced_pair_iterator[i]);
-			//	int b = thrust::get<1>((thrust::tuple<int, int>) reduced_pair_iterator[i]);
-			//	float c = new_graph.weights[i];
-			//	printf("%d %d %.10f\n", a, b, c);
-			//}
+			/*printf("\n\nSTART");
+			for (int i = 0; i < n_reduced_edges; i++) {
+				int a = community.graph.edge_source[i];
+				int b = community.graph.edge_destination[i];
+				float c = community.graph.weights[i];
+				printf("%d %d %.10f\n", a, b, c);
+			}*/
 
 			community.graph.edge_source.resize(n_reduced_edges);
 			community.graph.edge_destination.resize(n_reduced_edges);

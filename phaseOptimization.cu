@@ -123,7 +123,7 @@ void OptimizationPhase::optimize() {
 		std::cout << " - Copy Time : " << milliseconds << "ms" << std::endl;
 #endif
 #endif
-		h.fill(	
+		h.fill_for_optimization(	
 				thrust::raw_pointer_cast(community.graph.edge_source.data()),
 				thrust::raw_pointer_cast(community.graph.edge_destination.data()),
 				thrust::raw_pointer_cast(community.graph.weights.data()),

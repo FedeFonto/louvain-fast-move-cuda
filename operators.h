@@ -140,6 +140,17 @@ struct PairSum : public thrust::binary_function < thrust::tuple<T1, T2>, thrust:
 	};
 };
 
+struct SplitIterator : public thrust::unary_function<thrust::tuple<unsigned long long, float>, thrust::tuple<unsigned int, unsigned int, float>> {
+	__host__ __device__
+	thrust::tuple<unsigned int, unsigned int, float> operator()(thrust::tuple<unsigned long long, float> d) {
+		const unsigned int a = (thrust::get<0>(d) >> 32);
+		const unsigned int b = thrust::get<0>(d);
+		return thrust::make_tuple(a,b, thrust::get<1>(d));
+	};
+
+	SplitIterator() {};
+};
+
 template<typename T>
 struct Square : public thrust::unary_function<T, T> {
 	__host__ __device__
