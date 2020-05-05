@@ -39,13 +39,24 @@ bool insertHashTable(unsigned int k1,unsigned int k2, float v, unsigned long lon
 };
 
 __global__
-void kernel(unsigned int* k1, unsigned int* k2, float* v, int n_of_elem , unsigned long long* pointer_k1, float* pointer_v, int*c, float* self, unsigned int* communities) {
-	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
+void kernel(unsigned int* k1,
+			unsigned int* k2,
+			float* v,
+			int offset,
+			int n_of_elem , 
+			unsigned long long* pointer_k1, 
+			float* pointer_v, 
+			int*c, 
+			float* self, 
+			unsigned int* communities, 
+			bool* community_change) {
+	int id = offset + threadIdx.x + blockIdx.x * BLOCK_SIZE;
 	if (id < n_of_elem) {
-		if (communities[k1[id]] == k2[id])
-			atomicAdd(&self[k1[id]], v[id]);
-		else
-			bool b = insertHashTable(k1[id], k2[id], v[id], pointer_k1, pointer_v, c);
+		if(community_change[k1[id]] && k1[id] != k2[id])
+			if (communities[k1[id]] == communities[k2[id]])
+				atomicAdd(&self[k1[id]], v[id]);
+			else
+				insertHashTable(k1[id], communities[k2[id]], v[id], pointer_k1, pointer_v, c);
 	}
 };
 
@@ -63,11 +74,11 @@ struct HashMap {
 	float* pointer_v = thrust::raw_pointer_cast(values.data());
 	thrust::device_vector<int> c = thrust::device_vector<int>(3);
 
-	void fill(unsigned int* k1, unsigned int* k2, float* v, int n_of_elem, int n_nodes, unsigned int* communities) {
+	void fill(unsigned int* k1, unsigned int* k2, float* v, int offset, int n_of_elem, int n_nodes, unsigned int* communities, bool* community_change) {
 		int n_blocks = (n_of_elem + BLOCK_SIZE - 1) / BLOCK_SIZE;
 		clear();
 		self_community = thrust::device_vector<float>(n_nodes);
-		kernel << <n_blocks, BLOCK_SIZE >> > (k1, k2, v, n_of_elem, pointer_k, pointer_v, thrust::raw_pointer_cast(c.data()), thrust::raw_pointer_cast(self_community.data()), communities);
+		kernel <<<n_blocks, BLOCK_SIZE >>> (k1, k2, v, offset, n_of_elem, pointer_k, pointer_v, thrust::raw_pointer_cast(c.data()), thrust::raw_pointer_cast(self_community.data()), communities, community_change);
 	}
 
 

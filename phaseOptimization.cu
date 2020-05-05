@@ -111,29 +111,7 @@ void OptimizationPhase::optimize() {
 		auto key_community = thrust::make_zip_iterator(thrust::make_tuple(key_node_source.begin(), key_community_dest.begin()));
 		auto selected_edge = thrust::make_zip_iterator(thrust::make_tuple(key_node_source.begin(), key_community_dest.begin(), values_weight.begin()));
 
-		int n_edge_in_buckets;
-
-		auto p = thrust::copy_if(
-			thrust::make_transform_iterator(community.start + round, MakeCommunityDest(thrust::raw_pointer_cast(community.communities.data()))),
-			thrust::make_transform_iterator(community.start + limit_round, MakeCommunityDest(thrust::raw_pointer_cast(community.communities.data()))),
-			thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.begin() + round, community.graph.edge_destination.begin() + round)),
-			selected_edge,
-			TestTupleValue(thrust::raw_pointer_cast(neighboorhood_change.data()))
-		);
-
-		n_edge_in_buckets = p - selected_edge;
-
-		key_node_source.resize(n_edge_in_buckets);
-		key_community_dest.resize(n_edge_in_buckets);
-		values_weight.resize(n_edge_in_buckets);
-
-
-		if (n_edge_in_buckets == 0) {
-#if PRINT_DEBUG_LOG
-			printf("No elements!\n");
-#endif 
-			return;
-		}
+		int n_edge_in_buckets = limit_round;
 
 #if PRINT_PERFORMANCE_LOG
 		cudaEventRecord(copy);
@@ -147,12 +125,14 @@ void OptimizationPhase::optimize() {
 		std::cout << " - Copy Time : " << milliseconds << "ms" << std::endl;
 #endif
 #endif
-		h.fill(	thrust::raw_pointer_cast(key_node_source.data()),
-				thrust::raw_pointer_cast(key_community_dest.data()),
-				thrust::raw_pointer_cast(values_weight.data()), 
+		h.fill(	thrust::raw_pointer_cast(community.graph.edge_source.data()),
+				thrust::raw_pointer_cast(community.graph.edge_destination.data()),
+				thrust::raw_pointer_cast(community.graph.weights.data()),
+				round,
 				n_edge_in_buckets,
 				community.graph.n_nodes,
-				thrust::raw_pointer_cast(community.communities.data())
+				thrust::raw_pointer_cast(community.communities.data()), 
+				thrust::raw_pointer_cast(neighboorhood_change.data())
 			);
 
 #if PRINT_PERFORMANCE_LOG
@@ -168,7 +148,7 @@ void OptimizationPhase::optimize() {
 #endif
 
 		n_edge_in_buckets = h.resize();
-		auto pair = thrust::make_zip_iterator(thrust::make_tuple(h.key.begin(), h.values.begin()));
+
 
 #if PRINT_PERFORMANCE_LOG
 		cudaEventRecord(resize);
@@ -181,6 +161,8 @@ void OptimizationPhase::optimize() {
 		std::cout << " - Resize Time : " << milliseconds << "ms" << std::endl;
 #endif
 #endif
+
+		auto pair = thrust::make_zip_iterator(thrust::make_tuple(h.key.begin(), h.values.begin()));
 		
 		thrust::transform(
 			pair,
