@@ -9,6 +9,8 @@
 #include <thrust/sort.h>
 #include <thrust/reduce.h>
 #include <thrust/extrema.h>
+#include "hashmap.cuh"
+
 
 
 
@@ -25,6 +27,8 @@ private:
 
 	Community& community;
 	int execution_number = 0;
+	HashMap h = HashMap(BUCKETS_SIZE);
+
 
 	OptimizationPhase(Community& c) :
 		neighboorhood_change(thrust::device_vector<bool>(c.graph.n_nodes, true)),

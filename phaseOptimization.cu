@@ -5,7 +5,6 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
-#include "hashmap.cuh"
 
 __device__ __forceinline__ 
 float atomicMaxFloat(float* addr, float value) {
@@ -89,7 +88,6 @@ void OptimizationPhase::optimize() {
 
 	int limit_round;
 	int round = 0;
-	auto h = HashMap();
 
 	while (round < community.graph.edge_destination.size()) {
 #if PRINT_PERFORMANCE_LOG
@@ -125,7 +123,8 @@ void OptimizationPhase::optimize() {
 		std::cout << " - Copy Time : " << milliseconds << "ms" << std::endl;
 #endif
 #endif
-		h.fill(	thrust::raw_pointer_cast(community.graph.edge_source.data()),
+		h.fill(	
+				thrust::raw_pointer_cast(community.graph.edge_source.data()),
 				thrust::raw_pointer_cast(community.graph.edge_destination.data()),
 				thrust::raw_pointer_cast(community.graph.weights.data()),
 				round,
