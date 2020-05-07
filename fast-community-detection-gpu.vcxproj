@@ -104,6 +104,7 @@
       </Include>
     </CudaCompile>
     <CudaCompile Include="phaseOptimization.cu" />
+    <CudaCompile Include="phaseOptimizationUpdate.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="constants.h" />

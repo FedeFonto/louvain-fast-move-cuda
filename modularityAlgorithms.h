@@ -26,7 +26,7 @@ private:
 		bool continue_optimization = false;
 		do {
 			old_modularity = C.modularity;
-			OptimizationPhase::run(C, true);
+			OptimizationPhase::run(C, mode);
 			continue_optimization = (C.modularity - old_modularity) > MODULARITY_CONVERGED_THRESHOLD;
 			AggregationPhase::run(C, continue_optimization, mode);
 			iteration++;

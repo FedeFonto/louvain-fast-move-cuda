@@ -27,49 +27,8 @@ void update_best_kernel(unsigned long long* key, float* value, unsigned int* bes
 	}
 }
 
-__global__
-void update_value_kernel(
-	unsigned int n_nodes,
-	unsigned int* community_dest,
-	float* delta_value,
-	unsigned int* community,
-	float* community_weight,
-	float* nodes_weight,
-	bool* its_changed
-) {
-	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
-	if (id < n_nodes) {
-		int node = id;
-		int c = community_dest[id];
-		if (community[node] == c || delta_value[id] <= 0) {
-			return;
-		}
-		else {
-			atomicAdd(&community_weight[c], nodes_weight[node]);
-			atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
-			community[node] = c;
-			its_changed[node] = true;
-		}
-	}
-};
 
-__global__
-void update_changed_kernel(
-	bool* n_changed,
-	bool* its_changed,
-	unsigned int* source,
-	unsigned int* dest,
-	unsigned int n_edge
-) {
-	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
-	if (id < n_edge) {
-		if (its_changed[dest[id]]) {
-			n_changed[source[id]] = true;
-		}
-	}
-}
-
-void OptimizationPhase::optimize() {
+void OptimizationPhase::optimize_hash() {
 #if PRINT_PERFORMANCE_LOG
 	cudaEvent_t start, round_start, copy, map, resize, transform, best, kernel_update, stop;
 	cudaEventCreate(&round_start);
@@ -84,7 +43,6 @@ void OptimizationPhase::optimize() {
 	cudaEventRecord(start);
 	float milliseconds = 0;
 #endif
-	auto its_changed = thrust::device_vector<bool>(community.graph.n_nodes, false);
 
 	int limit_round;
 	int round = 0;
@@ -213,59 +171,6 @@ void OptimizationPhase::optimize() {
 		round = limit_round;
 	}
 
-	int n_blocks = (community.graph.n_nodes + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-
-	update_value_kernel << <n_blocks, BLOCK_SIZE >> > (
-		community.graph.n_nodes,
-		thrust::raw_pointer_cast(final_community.data()),
-		thrust::raw_pointer_cast(final_value.data()),
-		thrust::raw_pointer_cast(community.communities.data()),
-		thrust::raw_pointer_cast(community.communities_weight.data()),
-		thrust::raw_pointer_cast(community.graph.tot_weight_per_nodes.data()),
-		thrust::raw_pointer_cast(its_changed.data())
-		);
-
-#if PRINT_PERFORMANCE_LOG
-	cudaEventRecord(kernel_update);
-	cudaEventSynchronize(kernel_update);
-	cudaEventElapsedTime(&milliseconds, best, kernel_update);
-#if CSV_FORM
-	std::cout << milliseconds << ",";
-#else
-	std::cout << " - Kernel Update Time : " << milliseconds << "ms" << std::endl;
-#endif
-#endif
-
-	n_blocks = (community.graph.edge_source.size() + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-	thrust::fill(neighboorhood_change.begin(), neighboorhood_change.end(), false);
-
-
-	update_changed_kernel << <n_blocks, BLOCK_SIZE >> > (
-		thrust::raw_pointer_cast(neighboorhood_change.data()),
-		thrust::raw_pointer_cast(its_changed.data()),
-		thrust::raw_pointer_cast(community.graph.edge_source.data()),
-		thrust::raw_pointer_cast(community.graph.edge_destination.data()),
-		community.graph.edge_source.size()
-		);
-
-
-#if PRINT_PERFORMANCE_LOG
-	cudaEventRecord(stop);
-	cudaEventSynchronize(stop);
-	cudaEventElapsedTime(&milliseconds, kernel_update, stop);
-#if CSV_FORM
-	std::cout << milliseconds << ",";
-	cudaEventElapsedTime(&milliseconds, start, stop);
-	std::cout << milliseconds << std::endl;
-
-#else
-	std::cout << " - Kernel Changed Time : " << milliseconds << "ms" << std::endl;
-	cudaEventElapsedTime(&milliseconds, start, stop);
-	std::cout << "Optimization Time: " << milliseconds << "ms \n" << std::endl;
-#endif
-#endif
 }
 
 
