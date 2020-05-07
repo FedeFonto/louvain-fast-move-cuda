@@ -113,6 +113,8 @@
     <ClInclude Include="hashmap.cuh" />
     <ClInclude Include="modularityAlgorithms.h" />
     <ClInclude Include="operators.h" />
+    <ClInclude Include="operatorsCommunity.h" />
+    <ClInclude Include="operatorsDelta.h" />
     <ClInclude Include="phaseAggregation.cuh" />
     <ClInclude Include="phaseOptimization.cuh" />
     <ClInclude Include="phaseRefine.cuh" />

@@ -167,7 +167,7 @@ void OptimizationPhase::optimize() {
 			pair,
 			pair + n_edge_in_buckets,
 			h.values.begin(),
-			DeltaModularity(
+			DeltaModularityHash(
 				thrust::raw_pointer_cast(community.communities_weight.data()),
 				thrust::raw_pointer_cast(community.graph.tot_weight_per_nodes.data()),
 				community.graph.total_weight,
