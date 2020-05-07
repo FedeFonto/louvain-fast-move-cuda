@@ -94,7 +94,17 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 			);
 	}
 	else {
-		
+		n_blocks = (nodes_considered + BLOCK_SIZE - 1) / BLOCK_SIZE;
+		update_value_kernel_sort << <n_blocks, BLOCK_SIZE >> > (
+			nodes_considered,
+			thrust::raw_pointer_cast(final_node.data()),
+			thrust::raw_pointer_cast(final_community.data()),
+			thrust::raw_pointer_cast(final_value.data()),
+			thrust::raw_pointer_cast(community.communities.data()),
+			thrust::raw_pointer_cast(community.communities_weight.data()),
+			thrust::raw_pointer_cast(community.graph.tot_weight_per_nodes.data()),
+			thrust::raw_pointer_cast(its_changed.data())
+			);
 	}
 
 	n_blocks = (community.graph.edge_source.size() + BLOCK_SIZE - 1) / BLOCK_SIZE;

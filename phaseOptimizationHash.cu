@@ -52,10 +52,7 @@ void OptimizationPhase::optimize_hash() {
 
 		cudaEventRecord(round_start);
 #endif
-		key_node_source.resize(STEP_ROUND);
-		key_community_dest.resize(STEP_ROUND);
-		values_weight.resize(STEP_ROUND);
-
+	
 		limit_round = round + STEP_ROUND;
 		if (limit_round >= community.graph.edge_destination.size()) {
 			limit_round = community.graph.edge_destination.size();
@@ -64,23 +61,8 @@ void OptimizationPhase::optimize_hash() {
 			limit_round = community.graph.neighboorhood_sum[community.graph.edge_source[limit_round] - 1];
 		}
 
-		auto key_community = thrust::make_zip_iterator(thrust::make_tuple(key_node_source.begin(), key_community_dest.begin()));
-		auto selected_edge = thrust::make_zip_iterator(thrust::make_tuple(key_node_source.begin(), key_community_dest.begin(), values_weight.begin()));
-
 		int n_edge_in_buckets = limit_round;
 
-#if PRINT_PERFORMANCE_LOG
-		cudaEventRecord(copy);
-		cudaEventSynchronize(copy);
-		cudaEventElapsedTime(&milliseconds, round_start, copy);
-#if CSV_FORM
-		std::cout << n_edge_in_buckets << "," << community.graph.edge_source.size() << "," << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << ",";
-#else
-
-		std::cout << "\nNumber of Edges selected: " << n_edge_in_buckets << " / " << community.graph.edge_source.size() << " (" << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << " %)" << std::endl;
-		std::cout << " - Copy Time : " << milliseconds << "ms" << std::endl;
-#endif
-#endif
 		h.fill_for_optimization(	
 				thrust::raw_pointer_cast(community.graph.edge_source.data()),
 				thrust::raw_pointer_cast(community.graph.edge_destination.data()),
@@ -96,18 +78,19 @@ void OptimizationPhase::optimize_hash() {
 		cudaEventRecord(map);
 		cudaEventSynchronize(map);
 		cudaEventElapsedTime(&milliseconds, copy, map);
-#if CSV_FORM
-		std::cout << milliseconds << ",";
-#else
-
-		std::cout << " - Hashmap Time : " << milliseconds << "ms" << std::endl;
-#endif
 #endif
 
-		n_edge_in_buckets = h.resize();
+		n_edge_in_buckets = h.contract_array();
 
 
 #if PRINT_PERFORMANCE_LOG
+#if CSV_FORM
+		std::cout << n_edge_in_buckets << "," << community.graph.edge_source.size() << "," << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << ",";
+#else
+
+		std::cout << "\nNumber of Edges selected: " << n_edge_in_buckets << " / " << community.graph.edge_source.size() << " (" << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << " %)" << std::endl;
+		std::cout << " - Hashmap Time : " << milliseconds << "ms" << std::endl;
+#endif
 		cudaEventRecord(resize);
 		cudaEventSynchronize(resize);
 		cudaEventElapsedTime(&milliseconds, map, resize);

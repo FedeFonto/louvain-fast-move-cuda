@@ -116,7 +116,7 @@ struct AggregationPhase {
 					thrust::raw_pointer_cast(community_map.data())
 				);
 
-				auto n_reduced_edges = h.resize();
+				auto n_reduced_edges = h.contract_array();
 
 				thrust::sort_by_key(
 					h.key.begin(),

@@ -23,10 +23,15 @@ private:
 	thrust::device_vector<unsigned int> key_community_dest;
 	thrust::device_vector<float> values_weight;
 
+	thrust::device_vector<unsigned int> reduced_key_source;
+	thrust::device_vector<unsigned int> reduced_key_dest;
+	thrust::device_vector<float> reduced_value;
+
+	thrust::device_vector<unsigned int> final_node;
 	thrust::device_vector<unsigned int> final_community;
 	thrust::device_vector<float> final_value;
 
-	
+	unsigned int nodes_considered = 0;
 
 	Community& community;
 	int execution_number = 0;
@@ -46,17 +51,26 @@ private:
 		key_community_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
 		values_weight = thrust::device_vector<float>(STEP_ROUND);
 
+		reduced_key_source = thrust::device_vector<unsigned int>(STEP_ROUND);
+		reduced_key_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
+		reduced_value = thrust::device_vector<float>(STEP_ROUND);
+
+		final_node = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
 		final_community = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
 		final_value = thrust::device_vector<float>(c.graph.n_nodes, -1);
 	}
 
 	void optimize_hash();
+	void optimize_sort();
+	void optimize_fast();
+
 	void fast_move_update(bool value);
 
 	void optimize() {
+		nodes_considered = 0;
 		if (execution_number == 0) {
-			optimize_hash();
-			fast_move_update(true);
+			optimize_fast();
+			fast_move_update(false);
 		}
 		else {
 			const bool useHash = mode == HASH || mode == ADAPTIVE_MEMORY || (mode == ADAPTIVE_SPEED && execution_number > 3);
@@ -65,9 +79,9 @@ private:
 			}
 			//if mode == SORT or (mode == ADAPTIVE_SPEED and execution_number <= 3)
 			else {
-				optimize_hash();
+				optimize_sort();
 			}
-			fast_move_update(true);
+			fast_move_update(useHash);
 		}
 	};
 

@@ -140,7 +140,7 @@ struct HashMap {
 		kernel_aggregation<<<n_blocks, BLOCK_SIZE >>> (k1, k2, v, n_of_elem, size, pointer_k, pointer_v, pointer_conflict_stats , communities, map);
 	}
 
-	int resize() {
+	int contract_array() {
 		auto pair = thrust::make_zip_iterator(thrust::make_tuple(key.begin(), values.begin()));
 		auto new_size = thrust::remove_if(pair, pair + size, key.begin(), Equals<unsigned long long>(FLAG));
 		return new_size - pair;

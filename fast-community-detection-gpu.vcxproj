@@ -103,7 +103,8 @@
       <Include Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </Include>
     </CudaCompile>
-    <CudaCompile Include="phaseOptimization.cu" />
+    <CudaCompile Include="phaseOptimizationHash.cu" />
+    <CudaCompile Include="phaseOptimizationSort.cu" />
     <CudaCompile Include="phaseOptimizationUpdate.cu" />
   </ItemGroup>
   <ItemGroup>
