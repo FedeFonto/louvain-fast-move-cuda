@@ -103,15 +103,20 @@
       <Include Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </Include>
     </CudaCompile>
-    <CudaCompile Include="phaseOptimization.cu" />
+    <CudaCompile Include="phaseOptimizationHash.cu" />
+    <CudaCompile Include="phaseOptimizationSort.cu" />
+    <CudaCompile Include="phaseOptimizationUpdate.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="constants.h" />
     <ClInclude Include="community.h" />
     <ClInclude Include="graph.cuh" />
     <ClInclude Include="graphHost.cuh" />
+    <ClInclude Include="hashmap.cuh" />
     <ClInclude Include="modularityAlgorithms.h" />
     <ClInclude Include="operators.h" />
+    <ClInclude Include="operatorsCommunity.h" />
+    <ClInclude Include="operatorsDelta.h" />
     <ClInclude Include="phaseAggregation.cuh" />
     <ClInclude Include="phaseOptimization.cuh" />
     <ClInclude Include="phaseRefine.cuh" />
