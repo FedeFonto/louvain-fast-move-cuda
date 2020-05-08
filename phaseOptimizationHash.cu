@@ -30,10 +30,9 @@ void update_best_kernel(unsigned long long* key, float* value, unsigned int* bes
 
 void OptimizationPhase::optimize_hash() {
 #if PRINT_PERFORMANCE_LOG
-	cudaEvent_t start, round_start, copy, map, resize, transform, best, kernel_update, stop;
+	cudaEvent_t start, round_start, map, resize, transform, best, kernel_update, stop;
 	cudaEventCreate(&round_start);
 	cudaEventCreate(&start);
-	cudaEventCreate(&copy);
 	cudaEventCreate(&map);
 	cudaEventCreate(&resize);
 	cudaEventCreate(&transform);
@@ -49,7 +48,6 @@ void OptimizationPhase::optimize_hash() {
 
 	while (round < community.graph.edge_destination.size()) {
 #if PRINT_PERFORMANCE_LOG
-
 		cudaEventRecord(round_start);
 #endif
 	
@@ -61,14 +59,12 @@ void OptimizationPhase::optimize_hash() {
 			limit_round = community.graph.neighboorhood_sum[community.graph.edge_source[limit_round] - 1];
 		}
 
-		int n_edge_in_buckets = limit_round;
-
-		h.fill_for_optimization(	
+		hashmap->fill_for_optimization(	
 				thrust::raw_pointer_cast(community.graph.edge_source.data()),
 				thrust::raw_pointer_cast(community.graph.edge_destination.data()),
 				thrust::raw_pointer_cast(community.graph.weights.data()),
 				round,
-				n_edge_in_buckets,
+				limit_round,
 				community.graph.n_nodes,
 				thrust::raw_pointer_cast(community.communities.data()), 
 				thrust::raw_pointer_cast(neighboorhood_change.data())
@@ -77,22 +73,22 @@ void OptimizationPhase::optimize_hash() {
 #if PRINT_PERFORMANCE_LOG
 		cudaEventRecord(map);
 		cudaEventSynchronize(map);
-		cudaEventElapsedTime(&milliseconds, copy, map);
-#endif
-
-		n_edge_in_buckets = h.contract_array();
-
-
-#if PRINT_PERFORMANCE_LOG
+		cudaEventElapsedTime(&milliseconds, round_start, map);
 #if CSV_FORM
-		std::cout << n_edge_in_buckets << "," << community.graph.edge_source.size() << "," << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << ",";
+		std::cout << limit_round - round - hashmap->conflict_stats[3]<< "," << community.graph.edge_source.size() << "," << (float)(limit_round - round - hashmap->conflict_stats[3]) / community.graph.edge_source.size() * 100 << ",";
 #else
 
 		std::cout << "\nNumber of Edges selected: " << n_edge_in_buckets << " / " << community.graph.edge_source.size() << " (" << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << " %)" << std::endl;
 		std::cout << " - Hashmap Time : " << milliseconds << "ms" << std::endl;
 #endif
+#endif
+
+		int n_edge_in_buckets = hashmap->contract_array();
+
+
+#if PRINT_PERFORMANCE_LOG
 		cudaEventRecord(resize);
-		cudaEventSynchronize(resize);
+		cudaEventSynchronize(resize);		
 		cudaEventElapsedTime(&milliseconds, map, resize);
 #if CSV_FORM
 		std::cout << milliseconds << ",";
@@ -102,17 +98,17 @@ void OptimizationPhase::optimize_hash() {
 #endif
 #endif
 
-		auto pair = thrust::make_zip_iterator(thrust::make_tuple(h.key.begin(), h.values.begin()));
+		auto pair = thrust::make_zip_iterator(thrust::make_tuple(hashmap->key.begin(), hashmap->values.begin()));
 		
 		thrust::transform(
 			pair,
 			pair + n_edge_in_buckets,
-			h.values.begin(),
+			hashmap->values.begin(),
 			DeltaModularityHash(
 				thrust::raw_pointer_cast(community.communities_weight.data()),
 				thrust::raw_pointer_cast(community.graph.tot_weight_per_nodes.data()),
 				community.graph.total_weight,
-				thrust::raw_pointer_cast(h.self_community.data()),
+				thrust::raw_pointer_cast(hashmap->self_community.data()),
 				thrust::raw_pointer_cast(community.communities.data())
 			)
 		);
@@ -133,8 +129,8 @@ void OptimizationPhase::optimize_hash() {
 
 		int n_blocks = (n_edge_in_buckets + BLOCK_SIZE - 1) / BLOCK_SIZE;
 		update_best_kernel << <n_blocks, BLOCK_SIZE >> > (
-			h.pointer_k,
-			h.pointer_v,
+			hashmap-> pointer_k,
+			hashmap-> pointer_v,
 			thrust::raw_pointer_cast(final_community.data()),
 			thrust::raw_pointer_cast(final_value.data()),
 			n_edge_in_buckets

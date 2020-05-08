@@ -36,9 +36,12 @@ private:
 	Community& community;
 	int execution_number = 0;
 
-	MODE mode;
-	HashMap h = HashMap(BUCKETS_SIZE);
+	const static int adaptive = 4;
 
+	MODE mode;
+	HashMap* hashmap;
+
+	
 
 	OptimizationPhase(Community& c, MODE m) :
 		mode(m),
@@ -47,18 +50,53 @@ private:
 	
 		its_changed = thrust::device_vector<bool>(community.graph.n_nodes, false);
 
-		key_node_source = thrust::device_vector<unsigned int>(STEP_ROUND);
-		key_community_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
-		values_weight = thrust::device_vector<float>(STEP_ROUND);
+		if (m == SORT || m == ADAPTIVE_SPEED) {
+			key_node_source = thrust::device_vector<unsigned int>(STEP_ROUND);
+			key_community_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
+			values_weight = thrust::device_vector<float>(STEP_ROUND);
 
-		reduced_key_source = thrust::device_vector<unsigned int>(STEP_ROUND);
-		reduced_key_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
-		reduced_value = thrust::device_vector<float>(STEP_ROUND);
+			reduced_key_source = thrust::device_vector<unsigned int>(STEP_ROUND);
+			reduced_key_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
+			reduced_value = thrust::device_vector<float>(STEP_ROUND);
+		}
+		else {
+			hashmap = new HashMap(BUCKETS_SIZE);
+		}
 
 		final_node = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
 		final_community = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
 		final_value = thrust::device_vector<float>(c.graph.n_nodes, -1);
 	}
+
+
+	~OptimizationPhase() {
+		if (mode == HASH || mode == ADAPTIVE_MEMORY || (mode == ADAPTIVE_SPEED && execution_number > (adaptive +1))) {
+			delete hashmap;
+		}
+	}
+
+	void swap_mode() {
+		key_node_source.clear();
+		key_node_source.shrink_to_fit();
+
+		key_community_dest.clear();
+		key_community_dest.shrink_to_fit();
+
+		values_weight.clear();
+		values_weight.shrink_to_fit();
+
+		reduced_key_source.clear();
+		reduced_key_source.shrink_to_fit();
+
+		reduced_key_dest.clear();
+		reduced_key_dest.shrink_to_fit();
+
+		reduced_value.clear();
+		reduced_value.shrink_to_fit();
+
+		hashmap = new HashMap(BUCKETS_SIZE);
+	}
+	
 
 	void optimize_hash();
 	void optimize_sort();
@@ -68,12 +106,16 @@ private:
 
 	void optimize() {
 		nodes_considered = 0;
+		thrust::fill(final_value.begin(), final_value.end(), -1);
+		if (mode == ADAPTIVE_SPEED && execution_number == adaptive) {
+			swap_mode();
+		}
 		if (execution_number == 0) {
 			optimize_fast();
 			fast_move_update(false);
 		}
 		else {
-			const bool useHash = mode == HASH || mode == ADAPTIVE_MEMORY || (mode == ADAPTIVE_SPEED && execution_number > 3);
+			const bool useHash = mode == HASH || mode == ADAPTIVE_MEMORY || (mode == ADAPTIVE_SPEED && execution_number > adaptive);
 			if (useHash) {
 				optimize_hash();
 			}

@@ -22,19 +22,25 @@ static bool insertHashTable(unsigned int k1,unsigned int k2, float v, unsigned i
 	bool f = true;
 
 	for (int i = 0; i < max_tentative; i++) {
+#if PRINT_PERFORMANCE_LOG
 		atomicAdd(&conflict_stats[1], 1);
+#endif
 		int position = hash_position(l, i, size);
 		unsigned long long check = atomicCAS(&pointer_k[position], FLAG, l);
 		if (check == FLAG || check == l ) {
 			atomicAdd(&pointer_v[position], v);
 			return true;
 		}
+#if PRINT_PERFORMANCE_LOG
 		else if(f){
 			atomicAdd(conflict_stats, 1);
 			f = false;
 		}
+#endif
 	}
+#if PRINT_PERFORMANCE_LOG
 	atomicAdd(&conflict_stats[2], 1);
+#endif
 	return false;
 };
 
@@ -59,6 +65,11 @@ static void kernel_optimization(unsigned int* k1,
 				atomicAdd(&self[k1[id]], v[id]);
 			else
 				insertHashTable(k1[id], communities[k2[id]], v[id], size, pointer_k1, pointer_v, conflict_stats);
+#if PRINT_PERFORMANCE_LOG
+		else {
+			atomicAdd(&conflict_stats[3], 1);
+		}
+#endif
 	}
 };
 
@@ -88,7 +99,7 @@ struct HashMap {
 	thrust::device_vector<float> values;
 
 	thrust::device_vector<float> self_community;
-	thrust::device_vector<int> conflict_stats = thrust::device_vector<int>(3);
+	thrust::device_vector<int> conflict_stats = thrust::device_vector<int>(4);
 
 	unsigned long long* pointer_k;
 	float* pointer_v;
@@ -111,6 +122,7 @@ struct HashMap {
 		conflict_stats[0] = 0;
 		conflict_stats[1] = 0;
 		conflict_stats[2] = 0;
+		conflict_stats[3] = 0;
  	}
 
 	void fill_for_optimization(	unsigned int* k1,
@@ -141,12 +153,18 @@ struct HashMap {
 	}
 
 	int contract_array() {
-		auto pair = thrust::make_zip_iterator(thrust::make_tuple(key.begin(), values.begin()));
-		auto new_size = thrust::remove_if(pair, pair + size, key.begin(), Equals<unsigned long long>(FLAG));
-		return new_size - pair;
+		auto new_size = thrust::remove(key.begin(), key.end(), FLAG);
+		thrust::remove(values.begin(), values.end(), 0);
+		return new_size - key.begin();
 	}
 
-	
+	void resize(int s) {
+		size = s;
+		key = thrust::device_vector<unsigned long long>(size, FLAG);
+		values = thrust::device_vector<float>(size, 0);
+		pointer_k = thrust::raw_pointer_cast(key.data());
+		pointer_v = thrust::raw_pointer_cast(values.data());
+	}
 
 };
 
