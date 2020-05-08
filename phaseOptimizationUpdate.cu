@@ -77,10 +77,16 @@ static void update_changed_kernel(
 
 
 void OptimizationPhase::fast_move_update(const bool useHash) {
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
+	cudaEvent_t a, b;
+	cudaEventCreate(&a);
+	cudaEventCreate(&b);
+	cudaEventRecord(a);
+#endif
+
 	thrust::fill(its_changed.begin(), its_changed.end(), false);
 	thrust::fill(neighboorhood_change.begin(), neighboorhood_change.end(), false);
 	int n_blocks;
-
 	if (useHash) {
 		n_blocks = (community.graph.n_nodes + BLOCK_SIZE - 1) / BLOCK_SIZE;
 		update_value_kernel_hash << <n_blocks, BLOCK_SIZE >> > (
@@ -107,6 +113,18 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 			);
 	}
 
+#if PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
+	cudaEventRecord(b);
+	cudaEventSynchronize(b);
+	float milliseconds = 0;
+	cudaEventElapsedTime(&milliseconds, a, b);
+#if CSV_FORM
+	std::cout << milliseconds << ",";
+#else
+	std::cout << " - Update Time : " << milliseconds << "ms" << std::endl;
+#endif
+#endif
+
 	n_blocks = (community.graph.edge_source.size() + BLOCK_SIZE - 1) / BLOCK_SIZE;
 	update_changed_kernel << <n_blocks, BLOCK_SIZE >> > (
 		thrust::raw_pointer_cast(neighboorhood_change.data()),
@@ -115,6 +133,18 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 		thrust::raw_pointer_cast(community.graph.edge_destination.data()),
 		community.graph.edge_source.size()
 		);
+
+#if PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
+	cudaEventRecord(a);
+	cudaEventSynchronize(a);
+	milliseconds = 0;
+	cudaEventElapsedTime(&milliseconds, b, a);
+#if CSV_FORM
+	std::cout << milliseconds << "," << std::endl;
+#else
+	std::cout << " - Neighboorhood Update Time : " << milliseconds << "ms" << std::endl;
+#endif
+#endif
 }
 
 #endif

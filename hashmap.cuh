@@ -22,7 +22,7 @@ static bool insertHashTable(unsigned int k1,unsigned int k2, float v, unsigned i
 	bool f = true;
 
 	for (int i = 0; i < max_tentative; i++) {
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		atomicAdd(&conflict_stats[1], 1);
 #endif
 		int position = hash_position(l, i, size);
@@ -31,16 +31,16 @@ static bool insertHashTable(unsigned int k1,unsigned int k2, float v, unsigned i
 			atomicAdd(&pointer_v[position], v);
 			return true;
 		}
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		else if(f){
 			atomicAdd(conflict_stats, 1);
 			f = false;
 		}
 #endif
 	}
-#if PRINT_PERFORMANCE_LOG
+
 	atomicAdd(&conflict_stats[2], 1);
-#endif
+
 	return false;
 };
 
@@ -65,7 +65,7 @@ static void kernel_optimization(unsigned int* k1,
 				atomicAdd(&self[k1[id]], v[id]);
 			else
 				insertHashTable(k1[id], communities[k2[id]], v[id], size, pointer_k1, pointer_v, conflict_stats);
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		else {
 			atomicAdd(&conflict_stats[3], 1);
 		}

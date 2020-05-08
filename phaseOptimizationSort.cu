@@ -26,17 +26,15 @@ static void select_self_node(
 
 
 void OptimizationPhase::optimize_fast() {
-#if PRINT_PERFORMANCE_LOG
-	cudaEvent_t start, round_start, copy, sort, reduce_sort, self_c, transform, reduce_transform;
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
+	cudaEvent_t  round_start, copy, sort, reduce_sort, self_c, transform, reduce_transform;
 	cudaEventCreate(&round_start);
-	cudaEventCreate(&start);
 	cudaEventCreate(&copy);
 	cudaEventCreate(&sort);
 	cudaEventCreate(&reduce_sort);
 	cudaEventCreate(&self_c);
 	cudaEventCreate(&transform);
 	cudaEventCreate(&reduce_transform);
-	cudaEventRecord(start);
 	float milliseconds = 0;
 #endif
 
@@ -45,7 +43,7 @@ void OptimizationPhase::optimize_fast() {
 
 
 	while (round < community.graph.edge_destination.size()) {
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(round_start);
 #endif
 		key_node_source.resize(STEP_ROUND);
@@ -80,7 +78,7 @@ void OptimizationPhase::optimize_fast() {
 		values_weight.resize(n_edge_in_buckets);
 
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(copy);
 		cudaEventSynchronize(copy);
 		cudaEventElapsedTime(&milliseconds, round_start, copy);
@@ -101,7 +99,7 @@ void OptimizationPhase::optimize_fast() {
 		}
 
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(sort);
 		cudaEventSynchronize(sort);
 		cudaEventElapsedTime(&milliseconds, copy, sort);
@@ -112,7 +110,7 @@ void OptimizationPhase::optimize_fast() {
 #endif
 #endif
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(reduce_sort);
 		cudaEventSynchronize(reduce_sort);
 		cudaEventElapsedTime(&milliseconds, sort, reduce_sort);
@@ -126,7 +124,7 @@ void OptimizationPhase::optimize_fast() {
 		auto self_community = thrust::device_vector<float>(community.graph.n_nodes, 0);
 
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(self_c);
 		cudaEventSynchronize(self_c);
 		cudaEventElapsedTime(&milliseconds, reduce_sort, self_c);
@@ -154,7 +152,7 @@ void OptimizationPhase::optimize_fast() {
 			std::cout << reduced_key_source[i] << " " << community.communities[reduced_key_source[i]] << " " << reduced_key_dest[i] << " " << reduced_value[i] << std::endl;
 		}*/
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(transform);
 		cudaEventSynchronize(transform);
 		cudaEventElapsedTime(&milliseconds, self_c, transform);
@@ -183,7 +181,7 @@ void OptimizationPhase::optimize_fast() {
 		nodes_considered = ne.first - final_node.begin();
 		round = limit_round;
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(reduce_transform);
 		cudaEventSynchronize(reduce_transform);
 		cudaEventElapsedTime(&milliseconds, transform, reduce_transform);
@@ -198,17 +196,15 @@ void OptimizationPhase::optimize_fast() {
 
 
 void OptimizationPhase::optimize_sort() {
-#if PRINT_PERFORMANCE_LOG
-	cudaEvent_t start, round_start, copy, sort, reduce_sort, self_c, transform, reduce_transform;
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
+	cudaEvent_t  round_start, copy, sort, reduce_sort, self_c, transform, reduce_transform;
 	cudaEventCreate(&round_start);
-	cudaEventCreate(&start);
 	cudaEventCreate(&copy);
 	cudaEventCreate(&sort);
 	cudaEventCreate(&reduce_sort);
 	cudaEventCreate(&self_c);
 	cudaEventCreate(&transform);
 	cudaEventCreate(&reduce_transform);
-	cudaEventRecord(start);
 	float milliseconds = 0;
 #endif
 
@@ -217,7 +213,7 @@ void OptimizationPhase::optimize_sort() {
 
 
 	while (round < community.graph.edge_destination.size()) {
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(round_start);
 #endif
 		key_node_source.resize(STEP_ROUND);
@@ -256,7 +252,7 @@ void OptimizationPhase::optimize_sort() {
 		values_weight.resize(n_edge_in_buckets);
 
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(copy);
 		cudaEventSynchronize(copy);
 		cudaEventElapsedTime(&milliseconds, round_start, copy);
@@ -300,7 +296,7 @@ void OptimizationPhase::optimize_sort() {
 
 
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(sort);
 		cudaEventSynchronize(sort);
 		cudaEventElapsedTime(&milliseconds, copy, sort);
@@ -322,7 +318,7 @@ void OptimizationPhase::optimize_sort() {
 			reduced_value.begin()
 		);
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(reduce_sort);
 		cudaEventSynchronize(reduce_sort);
 		cudaEventElapsedTime(&milliseconds, sort, reduce_sort);
@@ -352,7 +348,7 @@ void OptimizationPhase::optimize_sort() {
 			thrust::raw_pointer_cast(self_community.data())
 			);
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(self_c);
 		cudaEventSynchronize(self_c);
 		cudaEventElapsedTime(&milliseconds, reduce_sort, self_c);
@@ -380,7 +376,7 @@ void OptimizationPhase::optimize_sort() {
 			std::cout << reduced_key_source[i] << " " << community.communities[reduced_key_source[i]] << " " << reduced_key_dest[i] << " " << reduced_value[i] << std::endl;
 		}*/
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(transform);
 		cudaEventSynchronize(transform);
 		cudaEventElapsedTime(&milliseconds, self_c, transform);
@@ -409,7 +405,7 @@ void OptimizationPhase::optimize_sort() {
 		nodes_considered = ne.first - final_node.begin();
 		round = limit_round;
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(reduce_transform);
 		cudaEventSynchronize(reduce_transform);
 		cudaEventElapsedTime(&milliseconds, transform, reduce_transform);

@@ -41,6 +41,10 @@ private:
 	MODE mode;
 	HashMap* hashmap;
 
+#if PRINT_PERFORMANCE_LOG
+	std::vector<float> performance = std::vector<float>();
+#endif
+
 	
 
 	OptimizationPhase(Community& c, MODE m) :
@@ -105,6 +109,13 @@ private:
 	void fast_move_update(bool value);
 
 	void optimize() {
+#if PRINT_PERFORMANCE_LOG
+		cudaEvent_t start, stop;
+		cudaEventCreate(&start);
+		cudaEventCreate(&stop);
+		cudaEventRecord(start);
+#endif
+
 		nodes_considered = 0;
 		thrust::fill(final_value.begin(), final_value.end(), -1);
 		if (mode == ADAPTIVE_SPEED && execution_number == adaptive) {
@@ -125,6 +136,14 @@ private:
 			}
 			fast_move_update(useHash);
 		}
+
+#if PRINT_PERFORMANCE_LOG
+		cudaEventRecord(stop);
+		cudaEventSynchronize(stop);
+		float milliseconds = 0;
+		cudaEventElapsedTime(&milliseconds, start, stop);
+		performance.push_back(milliseconds);
+#endif
 	};
 
 
@@ -166,7 +185,9 @@ public:
 		cudaEventSynchronize(stop);
 		float milliseconds = 0;
 		cudaEventElapsedTime(&milliseconds, start, stop);
-		std::cout << "Total Optimization Time : " << milliseconds << "ms" << std::endl;
+		for (int i = 0; i < optimizer.performance.size(); i++ )
+			std::cout << optimizer.performance[i] << " " ;
+		std::cout << std::endl << "Total Optimization Time : " << milliseconds << "ms" << std::endl;
 #endif
 	}
 		

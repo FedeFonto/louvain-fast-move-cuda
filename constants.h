@@ -5,6 +5,7 @@
 
 #define PRINT_DEBUG_LOG 0
 #define PRINT_PERFORMANCE_LOG 1
+#define INCLUDE_SUBPHASE 0
 #define CSV_FORM 1
 
 const enum MODE { HASH, SORT, ADAPTIVE_SPEED, ADAPTIVE_MEMORY };
@@ -15,7 +16,6 @@ const int EARLY_STOP_LIMIT = 1000000000;
 const int STEP_ROUND = 50000000;
 const unsigned long long FLAG = 18446744073709551615;
 const unsigned int BUCKETS_SIZE = STEP_ROUND + STEP_ROUND / 3;
-
 
 
 #endif 

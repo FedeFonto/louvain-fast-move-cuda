@@ -29,17 +29,15 @@ void update_best_kernel(unsigned long long* key, float* value, unsigned int* bes
 
 
 void OptimizationPhase::optimize_hash() {
-#if PRINT_PERFORMANCE_LOG
-	cudaEvent_t start, round_start, map, resize, transform, best, kernel_update, stop;
+#if PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
+	cudaEvent_t  round_start, map, resize, transform, best, kernel_update, stop;
 	cudaEventCreate(&round_start);
-	cudaEventCreate(&start);
 	cudaEventCreate(&map);
 	cudaEventCreate(&resize);
 	cudaEventCreate(&transform);
 	cudaEventCreate(&best);
 	cudaEventCreate(&kernel_update);
 	cudaEventCreate(&stop);
-	cudaEventRecord(start);
 	float milliseconds = 0;
 #endif
 
@@ -47,7 +45,7 @@ void OptimizationPhase::optimize_hash() {
 	int round = 0;
 
 	while (round < community.graph.edge_destination.size()) {
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(round_start);
 #endif
 	
@@ -70,7 +68,7 @@ void OptimizationPhase::optimize_hash() {
 				thrust::raw_pointer_cast(neighboorhood_change.data())
 			);
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(map);
 		cudaEventSynchronize(map);
 		cudaEventElapsedTime(&milliseconds, round_start, map);
@@ -86,7 +84,7 @@ void OptimizationPhase::optimize_hash() {
 		int n_edge_in_buckets = hashmap->contract_array();
 
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(resize);
 		cudaEventSynchronize(resize);		
 		cudaEventElapsedTime(&milliseconds, map, resize);
@@ -115,7 +113,7 @@ void OptimizationPhase::optimize_hash() {
 
 
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(transform);
 		cudaEventSynchronize(transform);
 		cudaEventElapsedTime(&milliseconds, resize, transform);
@@ -136,7 +134,7 @@ void OptimizationPhase::optimize_hash() {
 			n_edge_in_buckets
 			);
 
-#if PRINT_PERFORMANCE_LOG
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(best);
 		cudaEventSynchronize(best);
 		cudaEventElapsedTime(&milliseconds, transform, best);
