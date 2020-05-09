@@ -4,8 +4,8 @@
 int main()
 {
 
-    GraphHost g = GraphHost::GraphHost("soc-LiveJournal.txt", false);
-    //GraphHost g = GraphHost::GraphHost("graph-power-law-huge-2.edge", false);
+    GraphHost g = GraphHost::GraphHost("soc-LiveJournal.txt", false, 0);
+    //GraphHost g = GraphHost::GraphHost("graph-power-law-huge-2.edge", false, 0);
 
     cudaProfilerStart();
     auto C = ModularityAlgorithms::Louvain(g, HASH); 

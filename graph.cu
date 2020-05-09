@@ -14,9 +14,14 @@
 using namespace std;
 
 
-GraphHost::GraphHost(std::string name, bool weighted) {
+GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 	ifstream f;
 	f.open(name);
+	
+	string ignore;
+	for (int i = 0; i++; i < skip_line) {
+		getline(f, ignore);
+	}
 
 	int a, b;
 	auto node_set = set<int>();
@@ -74,7 +79,7 @@ GraphHost::GraphHost(std::string name, bool weighted) {
 
 		total_weight = n_links;
 
-		printf("Graph Host created! \n");
+		cout<< "Graph Host created! Name: " << name << ", nodes: " << n_nodes << ", edges: " << n_links << endl;
 
 	}
 };
