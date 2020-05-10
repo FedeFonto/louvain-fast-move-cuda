@@ -19,7 +19,7 @@ GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 	f.open(name);
 	
 	string ignore;
-	for (int i = 0; i++; i < skip_line) {
+	for (int i = 0; i < skip_line;  i++) {
 		getline(f, ignore);
 	}
 
