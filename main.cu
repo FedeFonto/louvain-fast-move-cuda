@@ -15,19 +15,47 @@ int main()
             GraphHost g = GraphHost::GraphHost("dataset/" + dataset[i], false, skip[i]);
             std::cout << std::endl;
 
-            auto C = ModularityAlgorithms::Louvain(g, HASH);
-            std::cout << "N of community found:" << C.n_of_best_communities << std::endl << "#####################################" << std::endl;
-            C = ModularityAlgorithms::Louvain(g, SORT);
-            std::cout << "N of community found:" << C.n_of_best_communities << std::endl << "#####################################" << std::endl;
-            C = ModularityAlgorithms::Louvain(g, ADAPTIVE_SPEED);
-            std::cout << "N of community found:" << C.n_of_best_communities << std::endl << "#####################################" << std::endl;
-            C = ModularityAlgorithms::Louvain(g, ADAPTIVE_MEMORY);
-            std::cout << "N of community found:" << C.n_of_best_communities << std::endl;
+            try {
+                std::cout << std::endl << "################### HASH ##################" << std::endl;
+                auto C = ModularityAlgorithms::Louvain(g, HASH);
+                std::cout << "N of community found:" << C.n_of_best_communities << std::endl;
+            }
+            catch (std::bad_alloc e) {
+                std::cout << "Bad Alloc" << std::endl;
+            }
+            try {
+                std::cout << std::endl << "################### SORT ##################" << std::endl;
+                auto C = ModularityAlgorithms::Louvain(g, SORT);
+                std::cout << "N of community found:" << C.n_of_best_communities << std::endl;
+
+            }
+            catch (std::bad_alloc e) {
+                std::cout << "Bad Alloc" << std::endl;
+            }
+            try {
+                std::cout << std::endl << "################### ADAPTIVE SPEED ##################" << std::endl;
+                auto C = ModularityAlgorithms::Louvain(g, ADAPTIVE_SPEED);
+                std::cout << "N of community found:" << C.n_of_best_communities << std::endl;
+            }
+            catch (std::bad_alloc e) {
+                std::cout << "Bad Alloc" << std::endl <<std::endl;
+            }
+            try {
+                std::cout << std::endl << "################### ADAPTIVE MEMORY ##################" << std::endl;
+                auto C = ModularityAlgorithms::Louvain(g, ADAPTIVE_MEMORY);
+                std::cout << "N of community found:" << C.n_of_best_communities << std::endl ;
+
+            }
+            catch (std::bad_alloc e) {
+                std::cout << "Bad Alloc" << std::endl;
+            }
+
         }
         catch (std::bad_alloc e) {
-            std::cout << "Bad Alloc" << std::endl;
+            std::cout << "Bad Alloc Graph" << std::endl;
+            continue;
         }
-
+      
     }
 
 
