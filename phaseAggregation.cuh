@@ -48,7 +48,7 @@ struct AggregationPhase {
 		if (aggregate) {
 			community.graph.n_nodes = community_map[community_map.size() - 1];
 
-			if (mode == SORT) {
+			if (mode == SORT && mode == ADAPTIVE_MEMORY) {
 
 				auto edge_source = thrust::device_vector<unsigned int>(n_edge);
 				auto edge_destination = thrust::device_vector<unsigned int>(n_edge);

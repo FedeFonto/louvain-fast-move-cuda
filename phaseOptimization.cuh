@@ -186,8 +186,8 @@ public:
 		float milliseconds = 0;
 		cudaEventElapsedTime(&milliseconds, start, stop);
 		for (int i = 0; i < optimizer.performance.size(); i++ )
-			std::cout << optimizer.performance[i] << " " ;
-		std::cout << std::endl << "Total Optimization Time : " << milliseconds << "ms" << std::endl;
+			std::cout << optimizer.performance[i] << "," ;
+		std::cout << milliseconds << std::endl;
 #endif
 	}
 		
