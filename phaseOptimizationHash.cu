@@ -74,6 +74,7 @@ void OptimizationPhase::optimize_hash() {
 		cudaEventElapsedTime(&milliseconds, round_start, map);
 #if CSV_FORM
 		std::cout << limit_round - round - hashmap->conflict_stats[3]<< "," << community.graph.edge_source.size() << "," << (float)(limit_round - round - hashmap->conflict_stats[3]) / community.graph.edge_source.size() * 100 << ",";
+		std::cout << milliseconds << ",";
 #else
 
 		std::cout << "\nNumber of Edges selected: " << n_edge_in_buckets << " / " << community.graph.edge_source.size() << " (" << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << " %)" << std::endl;

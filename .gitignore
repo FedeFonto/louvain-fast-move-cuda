@@ -349,3 +349,7 @@ healthchecksdb
 result.txt
 
 result1.txt
+
+dataset/
+
+graph-power-law-huge-2.edge
