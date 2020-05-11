@@ -30,16 +30,17 @@ private:
 		bool continue_optimization = false;
 		do {
 #if PRINT_PERFORMANCE_LOG
-			cudaEvent_t r_start, r_stop;
+			cudaEvent_t r_start, r_stop, a_stop;
 			cudaEventCreate(&r_start);
 			cudaEventCreate(&r_stop);
+			cudaEventCreate(&a_stop);
 			cudaEventRecord(r_start);
 #endif
 			old_modularity = C.modularity;
 			OptimizationPhase::run(C, mode);
 
 #if PRINT_PERFORMANCE_LOG
-			cudaEventRecord(r_start);
+			cudaEventRecord(r_stop);
 			cudaEventSynchronize(r_stop);
 			float milliseconds = 0;
 			cudaEventElapsedTime(&milliseconds, r_start, r_stop);
@@ -49,16 +50,13 @@ private:
 			}
 #endif
 			continue_optimization = (C.modularity - old_modularity) > MODULARITY_CONVERGED_THRESHOLD;
-#if PRINT_PERFORMANCE_LOG
-			cudaEventRecord(r_start);
-#endif
 			AggregationPhase::run(C, continue_optimization, mode);
 
 #if PRINT_PERFORMANCE_LOG
-			cudaEventRecord(r_stop);
-			cudaEventSynchronize(r_stop);
+			cudaEventRecord(a_stop);
+			cudaEventSynchronize(a_stop);
 			milliseconds = 0;
-			cudaEventElapsedTime(&milliseconds, r_start, r_stop);
+			cudaEventElapsedTime(&milliseconds, r_stop, a_stop);
 
 			if (iteration == 0) {
 				stats[3] = milliseconds;
