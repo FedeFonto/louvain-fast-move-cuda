@@ -14,16 +14,23 @@ float atomicMaxFloat(float* addr, float value) {
 
 	return old;
 }
+__device__ __host__
+unsigned int float_to_comparable_integer(float f) {
+	return *reinterpret_cast<unsigned int*>(&f);
+}
+
 
 __global__
-void update_best_kernel(unsigned long long* key, float* value, unsigned int* best_community, float* best_values, int n_edges){
+void update_best_kernel(unsigned long long* key, float* value, unsigned long long int* best_community, int n_edges){
 	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
 	if (id < n_edges) {
-		const unsigned int node = key[id] >> 32;
-		const unsigned int community = key[id];
-		if (atomicMaxFloat(&best_values[node], value[id]) < value[id]) {
-			atomicExch(&best_community[node], community);
+		unsigned int community = key[id];
+		unsigned int node = key[id] >> 32;
+		if (value[id] > 0) {
+			auto k = (((unsigned long long) float_to_comparable_integer(value[id])) << 32 | community);
+			atomicMax(&best_community[node], k);
 		}
+		
 	}
 }
 
@@ -125,13 +132,13 @@ void OptimizationPhase::optimize_hash() {
 		std::cout << " - Delta Time : " << milliseconds << "ms" << std::endl;
 #endif
 #endif
-
+	
+		thrust::max_element(hashmap->values.begin(), hashmap->values.begin() + n_edge_in_buckets);
 		int n_blocks = (n_edge_in_buckets + BLOCK_SIZE - 1) / BLOCK_SIZE;
 		update_best_kernel << <n_blocks, BLOCK_SIZE >> > (
 			hashmap-> pointer_k,
 			hashmap-> pointer_v,
-			thrust::raw_pointer_cast(final_community.data()),
-			thrust::raw_pointer_cast(final_value.data()),
+			thrust::raw_pointer_cast(final_pair.data()),
 			n_edge_in_buckets
 			);
 

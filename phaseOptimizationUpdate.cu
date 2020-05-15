@@ -6,11 +6,15 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+__device__ __host__
+float float_from_comparable_integer(int f) {
+	return *reinterpret_cast<float*>(&f);
+}
+
 __global__
 static void update_value_kernel_hash(
 	unsigned int n_nodes,
-	unsigned int* community_dest,
-	float* delta_value,
+	unsigned long long* community_pair,
 	unsigned int* community,
 	float* community_weight,
 	float* nodes_weight,
@@ -19,8 +23,10 @@ static void update_value_kernel_hash(
 	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
 	if (id < n_nodes) {
 		int node = id;
-		int c = community_dest[id];
-		if (community[node] == c || delta_value[id] <= 0) {
+		unsigned long long key = community_pair[node];
+		float delta_value = float_from_comparable_integer(key >> 32);
+		const unsigned int c = key;
+		if (community[node] == c || delta_value <= 0) {
 			return;
 		}
 		else {
@@ -91,8 +97,7 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 		n_blocks = (community.graph.n_nodes + BLOCK_SIZE - 1) / BLOCK_SIZE;
 		update_value_kernel_hash << <n_blocks, BLOCK_SIZE >> > (
 			community.graph.n_nodes,
-			thrust::raw_pointer_cast(final_community.data()),
-			thrust::raw_pointer_cast(final_value.data()),
+			thrust::raw_pointer_cast(final_pair.data()),
 			thrust::raw_pointer_cast(community.communities.data()),
 			thrust::raw_pointer_cast(community.communities_weight.data()),
 			thrust::raw_pointer_cast(community.graph.tot_weight_per_nodes.data()),

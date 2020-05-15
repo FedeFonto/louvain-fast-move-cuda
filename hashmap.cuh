@@ -153,9 +153,9 @@ struct HashMap {
 	}
 
 	int contract_array() {
-		auto new_size = thrust::remove(key.begin(), key.end(), FLAG);
-		thrust::remove(values.begin(), values.end(), 0);
-		return new_size - key.begin();
+		auto pair = thrust::make_zip_iterator(thrust::make_tuple(key.begin(), values.begin()));
+		auto new_size = thrust::remove_if(pair, pair + size, key.begin(), Equals<unsigned long long>(FLAG));
+		return new_size - pair;
 	}
 
 	void resize(int s) {
