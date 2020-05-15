@@ -3,19 +3,49 @@
 
 int main()
 {
-
-    GraphHost g = GraphHost::GraphHost("soc-LiveJournal.txt", false, 0);
+    std::vector<std::string> dataset = { "com-orkut.ungraph.txt", "out.wikipedia_link_fr",  "soc-LiveJournal.txt","hollywood-2009.mtx","out.wikipedia_link_it" ,"soc-pokec-relationships.txt", "out.dbpedia-link" };  
+    std::vector<int> skip = { 0, 1, 0, 49,1,0,2};
+   
     //GraphHost g = GraphHost::GraphHost("graph-power-law-huge-2.edge", false, 0);
 
-    cudaProfilerStart();
-    auto C = ModularityAlgorithms::Louvain(g, HASH); 
-    std::cout << "N of community found:" << C.n_of_best_communities << std::endl <<"#####################################" << std::endl;
-    C = ModularityAlgorithms::Louvain(g, SORT);
-    std::cout << "N of community found:" << C.n_of_best_communities << std::endl <<"#####################################" << std::endl;
-    C = ModularityAlgorithms::Louvain(g, ADAPTIVE_SPEED);
-    std::cout << "N of community found:" << C.n_of_best_communities << std::endl <<"#####################################" << std::endl;
-    C = ModularityAlgorithms::Louvain(g, ADAPTIVE_MEMORY);
-    cudaProfilerStop();
-    std::cout<< "N of community found:" << C.n_of_best_communities << std::endl;
+    for(int i = 0; i< dataset.size(); i++)
+    {
+        std::cout << std::endl << "****************************** NEW GRAPH ******************************" << std::endl;
+        try {
+            GraphHost g = GraphHost::GraphHost("dataset/" + dataset[i], false, skip[i]);
+            std::cout << std::endl;
+
+            try {
+                for (int i = 0; i < 10; i++) {
+                    std::cout << std::endl << "################### HASH " << i << " ##################" << std::endl;
+                    auto C = ModularityAlgorithms::Louvain(g, HASH);
+                    std::cout << "N of community found:" << C.n_of_best_communities << std::endl;
+                }
+            }
+            catch (std::bad_alloc e) {
+                std::cout << "Bad Alloc" << std::endl;
+            }
+            try {
+                for (int i = 0; i < 10; i++) {
+                    std::cout << std::endl << "################### SORT "<< i << " ##################" << std::endl;
+                    auto C = ModularityAlgorithms::Louvain(g, SORT);
+                    std::cout << "N of community found:" << C.n_of_best_communities << std::endl;
+                }
+
+            }
+            catch (std::bad_alloc e) {
+                std::cout << "Bad Alloc" << std::endl;
+            }
+
+        }
+        catch (std::bad_alloc e) {
+            std::cout << "Bad Alloc Graph" << std::endl;
+            continue;
+        }
+      
+    }
+
+
+  
     return 0;
 }

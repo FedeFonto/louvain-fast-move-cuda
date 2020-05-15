@@ -12,8 +12,6 @@
 #include "hashmap.cuh"
 
 
-
-
 class OptimizationPhase {
 private:
 	thrust::device_vector<bool> neighboorhood_change;
@@ -30,6 +28,8 @@ private:
 	thrust::device_vector<unsigned int> final_node;
 	thrust::device_vector<unsigned int> final_community;
 	thrust::device_vector<float> final_value;
+
+	thrust::device_vector<unsigned long long int> final_pair;
 
 	unsigned int nodes_considered = 0;
 
@@ -54,19 +54,14 @@ private:
 	
 		its_changed = thrust::device_vector<bool>(community.graph.n_nodes, false);
 
-		if (m == SORT || m == ADAPTIVE_SPEED) {
-			key_node_source = thrust::device_vector<unsigned int>(STEP_ROUND);
-			key_community_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
-			values_weight = thrust::device_vector<float>(STEP_ROUND);
+		key_node_source = thrust::device_vector<unsigned int>(STEP_ROUND);
+		key_community_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
+		values_weight = thrust::device_vector<float>(STEP_ROUND);
 
-			reduced_key_source = thrust::device_vector<unsigned int>(STEP_ROUND);
-			reduced_key_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
-			reduced_value = thrust::device_vector<float>(STEP_ROUND);
-		}
-		else {
-			hashmap = new HashMap(BUCKETS_SIZE);
-		}
-
+		reduced_key_source = thrust::device_vector<unsigned int>(STEP_ROUND);
+		reduced_key_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
+		reduced_value = thrust::device_vector<float>(STEP_ROUND);
+		
 		final_node = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
 		final_community = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
 		final_value = thrust::device_vector<float>(c.graph.n_nodes, -1);
@@ -98,6 +93,16 @@ private:
 		reduced_value.clear();
 		reduced_value.shrink_to_fit();
 
+		final_node.clear();
+		final_node.shrink_to_fit();
+
+		final_community.clear();
+		final_community.shrink_to_fit();
+
+		final_value.clear();
+		final_value.shrink_to_fit();
+
+		final_pair = thrust::device_vector<unsigned long long int>(community.graph.n_nodes, 0);
 		hashmap = new HashMap(BUCKETS_SIZE);
 	}
 	
@@ -115,23 +120,26 @@ private:
 		cudaEventCreate(&stop);
 		cudaEventRecord(start);
 #endif
-
 		nodes_considered = 0;
-		thrust::fill(final_value.begin(), final_value.end(), -1);
-		if (mode == ADAPTIVE_SPEED && execution_number == adaptive) {
+
+		if ((mode == ADAPTIVE_SPEED && execution_number == adaptive) || (mode == HASH && execution_number == 1)) {
 			swap_mode();
 		}
+
 		if (execution_number == 0) {
+			thrust::fill(final_value.begin(), final_value.end(), -1);
 			optimize_fast();
 			fast_move_update(false);
 		}
 		else {
 			const bool useHash = mode == HASH || mode == ADAPTIVE_MEMORY || (mode == ADAPTIVE_SPEED && execution_number > adaptive);
 			if (useHash) {
+				thrust::fill(final_pair.begin(), final_pair.end(), 0);
 				optimize_hash();
 			}
 			//if mode == SORT or (mode == ADAPTIVE_SPEED and execution_number <= 3)
 			else {
+				thrust::fill(final_value.begin(), final_value.end(), -1);
 				optimize_sort();
 			}
 			fast_move_update(useHash);
@@ -186,8 +194,8 @@ public:
 		float milliseconds = 0;
 		cudaEventElapsedTime(&milliseconds, start, stop);
 		for (int i = 0; i < optimizer.performance.size(); i++ )
-			std::cout << optimizer.performance[i] << " " ;
-		std::cout << std::endl << "Total Optimization Time : " << milliseconds << "ms" << std::endl;
+			std::cout << optimizer.performance[i] << "," ;
+		std::cout << milliseconds << std::endl;
 #endif
 	}
 		

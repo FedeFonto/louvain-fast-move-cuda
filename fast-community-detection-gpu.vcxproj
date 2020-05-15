@@ -89,9 +89,8 @@
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <Include>C:\Users\fedef\Documents\Unive\Tesi\Progetto\fast-community-detection-gpu\cub-1.8.0</Include>
-      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
-      <CodeGeneration>
-      </CodeGeneration>
+      <CodeGeneration>compute_75,sm_75</CodeGeneration>
+      <GenerateRelocatableDeviceCode>false</GenerateRelocatableDeviceCode>
     </CudaCompile>
     <CudaLink>
       <AdditionalLibraryDirectories>C:\Users\fedef\Documents\Unive\Tesi\Progetto\fast-community-detection-gpu\cub-1.8.0</AdditionalLibraryDirectories>
