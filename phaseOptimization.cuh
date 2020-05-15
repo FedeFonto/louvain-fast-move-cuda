@@ -69,7 +69,7 @@ private:
 
 
 	~OptimizationPhase() {
-		if (mode == HASH || mode == ADAPTIVE_MEMORY || (mode == ADAPTIVE_SPEED && execution_number > (adaptive +1))) {
+		if (((mode == HASH || mode == ADAPTIVE_MEMORY ) && execution_number > 1) || (mode == ADAPTIVE_SPEED && execution_number > (adaptive +1))) {
 			delete hashmap;
 		}
 	}
