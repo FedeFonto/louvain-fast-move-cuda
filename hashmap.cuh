@@ -10,7 +10,7 @@
 
 const int max_tentative = 100;
 
-__device__
+__device__ __host__
 static inline int hash_position(unsigned long long l, int i, unsigned int size) {
 	return (11*(i+1) * l + 17 * (i+1)) % 334214459  % size;
 };
@@ -28,8 +28,10 @@ static bool insertHashTable(unsigned int k1,unsigned int k2, float v, unsigned i
 		int position = hash_position(l, i, size);
 		unsigned long long check = atomicCAS(&pointer_k[position], FLAG, l);
 		if (check == FLAG || check == l ) {
-			atomicAdd(&pointer_v[position], v);
-			return true;
+			float value = atomicAdd(&pointer_v[position], v);
+			if (value != value + v) {
+				return true;
+			}
 		}
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		else if(f){

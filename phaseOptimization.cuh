@@ -122,7 +122,7 @@ private:
 #endif
 		nodes_considered = 0;
 
-		if ((mode == ADAPTIVE_SPEED && execution_number == adaptive) || (mode == HASH && execution_number == 1)) {
+		if ((mode == ADAPTIVE_SPEED && execution_number == adaptive) || ((mode == HASH || mode == ADAPTIVE_MEMORY ) && execution_number == 1)) {
 			swap_mode();
 		}
 

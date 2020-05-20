@@ -107,13 +107,13 @@ struct AggregationPhase {
 			}
 			else {
 
-				HashMap h = HashMap(community.graph.edge_destination.size() + community.graph.edge_destination.size() / 3);
-
+				HashMap h = HashMap(n_edge + n_edge / 3);
+				
 				h.fill_for_aggregation(
 					thrust::raw_pointer_cast(community.graph.edge_source.data()),
 					thrust::raw_pointer_cast(community.graph.edge_destination.data()),
 					thrust::raw_pointer_cast(community.graph.weights.data()),
-					community.graph.edge_source.size(),
+					n_edge,
 					thrust::raw_pointer_cast(community.communities.data()),
 					thrust::raw_pointer_cast(community_map.data())
 				);
@@ -126,9 +126,9 @@ struct AggregationPhase {
 					h.values.begin()
 				);
 
-				community.graph.edge_source = thrust::device_vector<int>(n_reduced_edges);
-				community.graph.edge_destination = thrust::device_vector<int>(n_reduced_edges);
-				community.graph.weights = thrust::device_vector<float>(n_reduced_edges);
+				community.graph.edge_source = thrust::device_vector<unsigned int>(n_reduced_edges, 0);
+				community.graph.edge_destination = thrust::device_vector<unsigned int>(n_reduced_edges, 0);
+				community.graph.weights = thrust::device_vector<float>(n_reduced_edges, 0);
 				community.start = thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.begin(), community.graph.edge_destination.begin(), community.graph.weights.begin()));
 				community.end = thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.end(), community.graph.edge_destination.end(), community.graph.weights.end()));
 
@@ -136,17 +136,8 @@ struct AggregationPhase {
 				auto iter = thrust::make_transform_iterator(zip, SplitIterator());
 				thrust::copy(iter, iter + n_reduced_edges, community.start);
 
-				/*printf("\n\nSTART");
-				for (int i = 0; i < n_reduced_edges; i++) {
-					int a = community.graph.edge_source[i];
-					int b = community.graph.edge_destination[i];
-					float c = community.graph.weights[i];
-					printf("%d %d %.10f\n", a, b, c);
-				}*/
 
-				community.graph.edge_source.resize(n_reduced_edges);
-				community.graph.edge_destination.resize(n_reduced_edges);
-				community.graph.weights.resize(n_reduced_edges);
+
 				community.graph.n_links = n_reduced_edges / 2;
 			}
 
