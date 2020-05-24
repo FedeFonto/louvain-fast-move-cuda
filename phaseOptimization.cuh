@@ -171,7 +171,7 @@ private:
 			printf("Delta Modularity iteration %d: %10f \n", execution_number, delta);
 #endif 
 
-		} while ((execution_number <= EARLY_STOP_LIMIT) && (delta > MODULARITY_CONVERGED_THRESHOLD));
+		} while ((execution_number <= 10));
 
 	}
 
