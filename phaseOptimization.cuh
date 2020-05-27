@@ -159,6 +159,11 @@ private:
 		float old_modularity = 0;
 		float delta = 0;
 
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
+
+		std::cout << "Optimization Phase " << MyUtils::mode_name(mode) << std::endl;
+#endif 
+
 		do {
 			old_modularity = community.modularity;
 			optimize();

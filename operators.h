@@ -1,6 +1,7 @@
 #ifndef OPERATORS_H     
 #define OPERATORS_H
 
+#include "constants.h"
 #include "operatorsCommunity.h"
 #include "operatorsDelta.h"
 #include <thrust/functional.h>
@@ -85,6 +86,18 @@ struct MyUtils {
 		printf("\n GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
 
 	};
+
+	static std::string mode_name(MODE m) {
+		if (m == SORT)
+			return "SORT";
+		if (m == HASH)
+			return "HASH";
+		if (m == ADAPTIVE_MEMORY)
+			return "ADAPTIVE_MEMORY";
+		if (m == ADAPTIVE_SPEED)
+			return "ADAPTIVE_SPEED";
+		return "UNKNOWN";
+	}
 };
 
 #endif
