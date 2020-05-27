@@ -142,7 +142,7 @@ void OptimizationPhase::optimize_hash() {
 		cudaEventRecord(best);
 		cudaEventSynchronize(best);
 		cudaEventElapsedTime(&milliseconds, transform, best);
-		best_sum += milliseconds;
+		update_sum += milliseconds;
 		cudaEventElapsedTime(&milliseconds, round_start, best);
 		total += milliseconds;
 #endif
