@@ -26,26 +26,11 @@ static void select_self_node(
 
 
 void OptimizationPhase::optimize_fast() {
-#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
-	cudaEvent_t  round_start, copy, sort, reduce_sort, self_c, transform, reduce_transform;
-	cudaEventCreate(&round_start);
-	cudaEventCreate(&copy);
-	cudaEventCreate(&sort);
-	cudaEventCreate(&reduce_sort);
-	cudaEventCreate(&self_c);
-	cudaEventCreate(&transform);
-	cudaEventCreate(&reduce_transform);
-	float milliseconds = 0;
-#endif
 
 	int limit_round;
 	int round = 0;
 
-
 	while (round < community.graph.edge_destination.size()) {
-#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
-		cudaEventRecord(round_start);
-#endif
 		key_node_source.resize(STEP_ROUND);
 		key_community_dest.resize(STEP_ROUND);
 		values_weight.resize(STEP_ROUND);
@@ -77,20 +62,6 @@ void OptimizationPhase::optimize_fast() {
 		key_community_dest.resize(n_edge_in_buckets);
 		values_weight.resize(n_edge_in_buckets);
 
-
-#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
-		cudaEventRecord(copy);
-		cudaEventSynchronize(copy);
-		cudaEventElapsedTime(&milliseconds, round_start, copy);
-#if CSV_FORM
-		std::cout << n_edge_in_buckets << "," << community.graph.edge_source.size() << "," << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << ",";
-		std::cout << milliseconds << ",";
-#else
-		std::cout << "\nNumber of Edges selected: " << n_edge_in_buckets << " / " << community.graph.edge_source.size() << " (" << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << " %)" << std::endl;
-		std::cout << " - Copy Time : " << milliseconds << "ms" << std::endl;
-#endif
-#endif
-
 		if (n_edge_in_buckets == 0) {
 #if PRINT_DEBUG_LOG
 			printf("No elements!\n");
@@ -99,41 +70,7 @@ void OptimizationPhase::optimize_fast() {
 		}
 
 
-#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
-		cudaEventRecord(sort);
-		cudaEventSynchronize(sort);
-		cudaEventElapsedTime(&milliseconds, copy, sort);
-#if CSV_FORM
-		std::cout << milliseconds << ",";
-#else
-		std::cout << " - Sort Time : " << milliseconds << "ms" << std::endl;
-#endif
-#endif
-
-#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
-		cudaEventRecord(reduce_sort);
-		cudaEventSynchronize(reduce_sort);
-		cudaEventElapsedTime(&milliseconds, sort, reduce_sort);
-#if CSV_FORM
-		std::cout << milliseconds << ",";
-#else
-		std::cout << " - Reduce after sort time : " << milliseconds << "ms" << std::endl;
-#endif
-#endif
-
 		auto self_community = thrust::device_vector<float>(community.graph.n_nodes, 0);
-
-
-#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
-		cudaEventRecord(self_c);
-		cudaEventSynchronize(self_c);
-		cudaEventElapsedTime(&milliseconds, reduce_sort, self_c);
-#if CSV_FORM
-		std::cout << milliseconds << ",";
-#else
-		std::cout << " - Obtain self communities : " << milliseconds << "ms" << std::endl;
-#endif
-#endif
 
 		thrust::transform(
 			selected_edge,
@@ -152,19 +89,6 @@ void OptimizationPhase::optimize_fast() {
 			std::cout << reduced_key_source[i] << " " << community.communities[reduced_key_source[i]] << " " << reduced_key_dest[i] << " " << reduced_value[i] << std::endl;
 		}*/
 
-#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
-		cudaEventRecord(transform);
-		cudaEventSynchronize(transform);
-		cudaEventElapsedTime(&milliseconds, self_c, transform);
-#if CSV_FORM
-		std::cout << milliseconds << ",";
-#else
-		std::cout << " - Transform Time : " << milliseconds << "ms" << std::endl;
-#endif
-#endif
-
-
-
 		auto community_value_pair_input = thrust::make_zip_iterator(thrust::make_tuple(key_community_dest.begin(), values_weight.begin()));
 		auto community_value_pair_output = thrust::make_zip_iterator(thrust::make_tuple(final_community.begin() + nodes_considered, final_value.begin() + nodes_considered));
 
@@ -180,17 +104,6 @@ void OptimizationPhase::optimize_fast() {
 
 		nodes_considered = ne.first - final_node.begin();
 		round = limit_round;
-
-#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
-		cudaEventRecord(reduce_transform);
-		cudaEventSynchronize(reduce_transform);
-		cudaEventElapsedTime(&milliseconds, transform, reduce_transform);
-#if CSV_FORM
-		std::cout << milliseconds << "," << std::endl;
-#else
-		std::cout << " - Reduce after transform Time : " << milliseconds << "ms" << std::endl;
-#endif
-#endif
 	}
 }
 

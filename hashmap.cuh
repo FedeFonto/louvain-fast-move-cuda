@@ -19,7 +19,10 @@ static inline int hash_position(unsigned long long l, int i, unsigned int size) 
 __device__
 static bool insertHashTable(unsigned int k1,unsigned int k2, float v, unsigned int size, unsigned long long* pointer_k, float* pointer_v, int* conflict_stats) {
 	unsigned long long l = (((unsigned long long) k1) << 32) | k2;
-	bool f = true;
+
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
+	atomicAdd(conflict_stats, 1);
+#endif
 
 	for (int i = 0; i < max_tentative; i++) {
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
@@ -33,12 +36,6 @@ static bool insertHashTable(unsigned int k1,unsigned int k2, float v, unsigned i
 				return true;
 			}
 		}
-#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
-		else if(f){
-			atomicAdd(conflict_stats, 1);
-			f = false;
-		}
-#endif
 	}
 
 	atomicAdd(&conflict_stats[2], 1);

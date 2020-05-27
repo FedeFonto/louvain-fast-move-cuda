@@ -73,9 +73,10 @@ private:
 		stats[4] = milliseconds;
 		stats[5] = C.modularity;
 		std::cout << "\nFinal Modularity: " << C.modularity << "\nTotal Execution Time: " << milliseconds << "ms" << std::endl;
-		for (int i = 0; i < 6; i++)
+		std::cout << std::endl << "Metrics:" << std::endl;
+		for (int i = 0; i < 5; i++)
 			std::cout <<stats[i] << ",";
-		std::cout<< std::endl;
+		std::cout <<stats[5] <<  std::endl;
 		return C;
 	}
 };

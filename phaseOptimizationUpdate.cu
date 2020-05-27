@@ -83,7 +83,7 @@ static void update_changed_kernel(
 
 
 void OptimizationPhase::fast_move_update(const bool useHash) {
-#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_UPDATES
 	cudaEvent_t a, b;
 	cudaEventCreate(&a);
 	cudaEventCreate(&b);
@@ -118,7 +118,7 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 			);
 	}
 
-#if PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
+#if PRINT_PERFORMANCE_LOG && INCLUDE_UPDATES
 	cudaEventRecord(b);
 	cudaEventSynchronize(b);
 	float milliseconds = 0;
@@ -139,7 +139,7 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 		community.graph.edge_source.size()
 		);
 
-#if PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
+#if PRINT_PERFORMANCE_LOG && INCLUDE_UPDATES
 	cudaEventRecord(a);
 	cudaEventSynchronize(a);
 	milliseconds = 0;
