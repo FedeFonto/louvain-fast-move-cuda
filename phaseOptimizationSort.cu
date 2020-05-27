@@ -119,6 +119,14 @@ void OptimizationPhase::optimize_sort() {
 	cudaEventCreate(&transform);
 	cudaEventCreate(&reduce_transform);
 	float milliseconds = 0;
+	unsigned analyzed = 0;
+	float copy_sum = 0;
+	float sort_sum = 0;
+	float reduce_sort_sum = 0;
+	float self_c_sum = 0;
+	float transform_sum = 0;
+	float reduce_transform_sum = 0;
+	float total = 0;
 #endif
 
 	int limit_round;
@@ -169,13 +177,9 @@ void OptimizationPhase::optimize_sort() {
 		cudaEventRecord(copy);
 		cudaEventSynchronize(copy);
 		cudaEventElapsedTime(&milliseconds, round_start, copy);
-#if CSV_FORM
-		std::cout << n_edge_in_buckets << "," << community.graph.edge_source.size() << "," << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << ",";
-		std::cout << milliseconds << ",";
-#else
-		std::cout << "\nNumber of Edges selected: " << n_edge_in_buckets << " / " << community.graph.edge_source.size() << " (" << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << " %)" << std::endl;
-		std::cout << " - Copy Time : " << milliseconds << "ms" << std::endl;
-#endif
+		
+		analyzed += n_edge_in_buckets;
+		copy_sum += milliseconds;
 #endif
 
 		if (n_edge_in_buckets == 0) {
@@ -213,11 +217,7 @@ void OptimizationPhase::optimize_sort() {
 		cudaEventRecord(sort);
 		cudaEventSynchronize(sort);
 		cudaEventElapsedTime(&milliseconds, copy, sort);
-#if CSV_FORM
-		std::cout << milliseconds << ",";
-#else
-		std::cout << " - Sort Time : " << milliseconds << "ms" << std::endl;
-#endif
+		sort_sum += milliseconds;
 #endif
 
 		auto reduced_key = thrust::make_zip_iterator(thrust::make_tuple(reduced_key_source.begin(), reduced_key_dest.begin()));
@@ -235,11 +235,7 @@ void OptimizationPhase::optimize_sort() {
 		cudaEventRecord(reduce_sort);
 		cudaEventSynchronize(reduce_sort);
 		cudaEventElapsedTime(&milliseconds, sort, reduce_sort);
-#if CSV_FORM
-		std::cout << milliseconds << ",";
-#else
-		std::cout << " - Reduce after sort time : " << milliseconds << "ms" << std::endl;
-#endif
+		reduce_sort_sum += milliseconds;
 #endif
 
 		auto n_reduced_edges = new_end.first - reduced_key;
@@ -265,11 +261,7 @@ void OptimizationPhase::optimize_sort() {
 		cudaEventRecord(self_c);
 		cudaEventSynchronize(self_c);
 		cudaEventElapsedTime(&milliseconds, reduce_sort, self_c);
-#if CSV_FORM
-		std::cout << milliseconds << ",";
-#else
-		std::cout << " - Obtain self communities : " << milliseconds << "ms" << std::endl;
-#endif
+		self_c_sum += milliseconds;
 #endif
 
 		thrust::transform(
@@ -293,14 +285,8 @@ void OptimizationPhase::optimize_sort() {
 		cudaEventRecord(transform);
 		cudaEventSynchronize(transform);
 		cudaEventElapsedTime(&milliseconds, self_c, transform);
-#if CSV_FORM
-		std::cout << milliseconds << ",";
-#else
-		std::cout << " - Transform Time : " << milliseconds << "ms" << std::endl;
+		transform_sum += milliseconds;
 #endif
-#endif
-
-
 
 		auto community_value_pair_input = thrust::make_zip_iterator(thrust::make_tuple(reduced_key_dest.begin(), reduced_value.begin()));
 		auto community_value_pair_output = thrust::make_zip_iterator(thrust::make_tuple(final_community.begin() + nodes_considered, final_value.begin() + nodes_considered));
@@ -322,13 +308,24 @@ void OptimizationPhase::optimize_sort() {
 		cudaEventRecord(reduce_transform);
 		cudaEventSynchronize(reduce_transform);
 		cudaEventElapsedTime(&milliseconds, transform, reduce_transform);
-#if CSV_FORM
-		std::cout << milliseconds << "," << std::endl;
-#else
-		std::cout << " - Reduce after transform Time : " << milliseconds << "ms" << std::endl;
-#endif
+		reduce_transform_sum += milliseconds;
+		cudaEventElapsedTime(&milliseconds, round_start, reduce_transform);
+		total += milliseconds;
 #endif
 	}
+
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
+	std::cout << community.graph.edge_destination.size() << ",";
+	std::cout << analyzed << ",";
+	std::cout << (float)(analyzed) / community.graph.edge_destination.size() << ",";
+	std::cout << copy_sum << ",";
+	std::cout << sort_sum << ",";
+	std::cout << reduce_sort_sum << ",";
+	std::cout << self_c_sum << ",";
+	std::cout << transform_sum << ",";
+	std::cout << reduce_transform_sum << ",";
+	std::cout << total << std::endl;
+#endif
 }
 
 
