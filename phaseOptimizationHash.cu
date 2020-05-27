@@ -80,11 +80,14 @@ void OptimizationPhase::optimize_hash() {
 		cudaEventSynchronize(map);
 		cudaEventElapsedTime(&milliseconds, round_start, map);
 #if CSV_FORM
-		std::cout << limit_round - round - hashmap->conflict_stats[3]<< "," << community.graph.edge_source.size() << "," << (float)(limit_round - round - hashmap->conflict_stats[3]) / community.graph.edge_source.size() * 100 << ",";
+		std::cout << limit_round - round - hashmap->conflict_stats[3] << "," << community.graph.edge_source.size() << "," << (float)(limit_round - round - hashmap->conflict_stats[3]) / community.graph.edge_source.size() * 100 << ",";
+		std::cout <<(float) hashmap->conflict_stats[1] /  hashmap->conflict_stats[0] << "," ;
 		std::cout << milliseconds << ",";
 #else
 
-		std::cout << "\nNumber of Edges selected: " << n_edge_in_buckets << " / " << community.graph.edge_source.size() << " (" << (float)n_edge_in_buckets / community.graph.edge_source.size() * 100 << " %)" << std::endl;
+		std::cout << "\nNumber of Edges selected: " << limit_round - round - hashmap->conflict_stats[3] << " / " << community.graph.edge_source.size() << " (" << (float)(limit_round - round - hashmap->conflict_stats[3]) / community.graph.edge_source.size() * 100 << " %)" << std::endl;
+		std::cout << "Number of mean addressing: " <<(float) hashmap->conflict_stats[1] / (limit_round - round - hashmap->conflict_stats[3]) << std::endl;
+
 		std::cout << " - Hashmap Time : " << milliseconds << "ms" << std::endl;
 #endif
 #endif

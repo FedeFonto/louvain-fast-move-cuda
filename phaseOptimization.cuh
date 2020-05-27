@@ -193,6 +193,7 @@ public:
 		cudaEventSynchronize(stop);
 		float milliseconds = 0;
 		cudaEventElapsedTime(&milliseconds, start, stop);
+		std::cout << std::endl << "Iteration Stats: " << std::endl;
 		for (int i = 0; i < optimizer.performance.size(); i++ )
 			std::cout << optimizer.performance[i] << "," ;
 		std::cout << milliseconds << std::endl;
