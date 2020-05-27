@@ -171,7 +171,7 @@ private:
 			printf("Delta Modularity iteration %d: %10f \n", execution_number, delta);
 #endif 
 
-		} while ((execution_number <= 10));
+		} while ((execution_number < 10));
 
 	}
 
