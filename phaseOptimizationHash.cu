@@ -53,7 +53,6 @@ void OptimizationPhase::optimize_hash() {
 	float map_sum = 0;
 	float resize_sum = 0;
 	float transform_sum = 0;
-	float best_sum = 0;
 	float update_sum = 0;
 	float total = 0;
 #endif
@@ -157,7 +156,6 @@ void OptimizationPhase::optimize_hash() {
 	std::cout << map_sum << ",";
 	std::cout << resize_sum << ",";
 	std::cout << transform_sum << ",";
-	std::cout << best_sum << ",";
 	std::cout << update_sum << ",";
 	std::cout << total << std::endl;
 #endif
