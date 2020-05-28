@@ -39,6 +39,18 @@ struct GetMaxValue : public thrust::binary_function<thrust::tuple<unsigned int, 
 	GetMaxValue(){};
 };
 
+struct GetMaxValueint : public thrust::binary_function<thrust::tuple<unsigned int, int>, thrust::tuple<unsigned int, int>, thrust::tuple<unsigned int, int>> {
+	__host__ __device__
+		thrust::tuple<unsigned int, int> operator()(thrust::tuple<unsigned int, int> a, thrust::tuple<unsigned int, int> b) {
+		if (thrust::get<1>(b) > thrust::get<1>(a))
+			return b;
+		else
+			return a;
+	};
+
+	GetMaxValueint() {};
+};
+
 template<typename T1, typename T2>
 struct PairSum : public thrust::binary_function < thrust::tuple<T1, T2>, thrust::tuple<T1, T2>, thrust::tuple<T1, T2>>{
 
