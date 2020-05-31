@@ -23,8 +23,17 @@ int main()
             auto zip2 = thrust::make_zip_iterator(thrust::make_tuple(k.first, k.second));
             auto zip = thrust::make_zip_iterator(thrust::make_tuple(histo_1.begin(), histo_2.begin()));
             thrust::reverse(zip, zip2);
-            for (int i = 0; i < 50; i++)
-                std::cout << histo_1[i] << " " << histo_2[i] << std::endl;
+            int i = 0;
+            bool b = true;
+            while (b) {
+                if (histo_1[i] != 0) {
+                    std::cout << histo_1[i] << " " << histo_2[i] << std::endl;
+                    i++;
+                }
+                else {
+                    b = 0;
+                }
+            }
 
         }
         catch (std::bad_alloc e) {
