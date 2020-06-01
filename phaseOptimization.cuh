@@ -170,7 +170,15 @@ private:
 			execution_number++;
 			community.compute_modularity();
 			delta = community.modularity - old_modularity;
-
+			auto n_community = thrust::transform_reduce(
+				community.communities_weight.begin(),
+				community.communities_weight.end(),
+				CountNotZero(),
+				0,
+				thrust::plus<int>()
+			);
+			std::cout << "First Data " << std::endl << community.modularity << " " << delta << " " << n_community << std::endl;
+		
 #if PRINT_DEBUG_LOG
 			printf("MODULARITY = %10f\n", community.modularity);
 			printf("Delta Modularity iteration %d: %10f \n", execution_number, delta);
