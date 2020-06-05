@@ -3,8 +3,8 @@
 
 int main()
 {
-    std::vector<std::string> dataset = { "out.patentcite",  "soc-pokec-relationships.txt", "coPapersDBLP.mtx", "packing-500x100x100-b050.mtx","soc-LiveJournal.txt", "ljournal-2008.mtx","out.wikipedia_link_ja",  "hollywood-2009.mtx","out.wikipedia_link_it" , "out.wikipedia_link_fr","com-orkut.ungraph.txt", "out.dbpedia-link", "indochina-2004.mtx" };
-    std::vector<int> skip = {2, 0, 129, 141, 0, 56, 1, 49,  1, 1, 0, 2, 48 };
+    std::vector<std::string> dataset = {"soc-LiveJournal.txt", "ljournal-2008.mtx","out.wikipedia_link_ja",  "hollywood-2009.mtx","out.wikipedia_link_it" , "out.wikipedia_link_fr","com-orkut.ungraph.txt", "out.dbpedia-link", "indochina-2004.mtx" };
+    std::vector<int> skip = {0, 129, 141, 0, 56, 1, 49,  1, 1, 0, 2, 48 };
 
    
     //GraphHost g = GraphHost::GraphHost("graph-power-law-huge-2.edge", false, 0);

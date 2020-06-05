@@ -26,11 +26,27 @@ static void select_self_node(
 
 
 void OptimizationPhase::optimize_fast() {
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_FAST
+	cudaEvent_t  round_start, copy, sort, reduce_sort, self_c, transform, reduce_transform;
+	cudaEventCreate(&round_start);
+	cudaEventCreate(&copy);
+	cudaEventCreate(&transform);
+	cudaEventCreate(&reduce_transform);
+	float milliseconds = 0;
+	unsigned analyzed = 0;
+	float copy_sum = 0;
+	float transform_sum = 0;
+	float reduce_transform_sum = 0;
+	float total = 0;
+#endif
 
 	int limit_round;
 	int round = 0;
 
 	while (round < community.graph.edge_destination.size()) {
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_FAST
+		cudaEventRecord(round_start);
+#endif
 		key_node_source.resize(STEP_ROUND);
 		key_community_dest.resize(STEP_ROUND);
 		values_weight.resize(STEP_ROUND);
@@ -55,6 +71,14 @@ void OptimizationPhase::optimize_fast() {
 			selected_edge,
 			TestTupleValue(thrust::raw_pointer_cast(neighboorhood_change.data()))
 		);
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_FAST
+		cudaEventRecord(copy);
+		cudaEventSynchronize(copy);
+		cudaEventElapsedTime(&milliseconds, round_start, copy);
+
+		analyzed += n_edge_in_buckets;
+		copy_sum += milliseconds;
+#endif
 
 		n_edge_in_buckets = p - selected_edge;
 
@@ -85,6 +109,13 @@ void OptimizationPhase::optimize_fast() {
 			)
 		);
 
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_FAST
+		cudaEventRecord(transform);
+		cudaEventSynchronize(transform);
+		cudaEventElapsedTime(&milliseconds, copy, transform);
+		transform_sum += milliseconds;
+#endif
+
 		/*for (int i = 0; i < n_reduced_edges; i++) {
 			std::cout << reduced_key_source[i] << " " << community.communities[reduced_key_source[i]] << " " << reduced_key_dest[i] << " " << reduced_value[i] << std::endl;
 		}*/
@@ -104,7 +135,25 @@ void OptimizationPhase::optimize_fast() {
 
 		nodes_considered = ne.first - final_node.begin();
 		round = limit_round;
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_FAST
+		cudaEventRecord(reduce_transform);
+		cudaEventSynchronize(reduce_transform);
+		cudaEventElapsedTime(&milliseconds, transform, reduce_transform);
+		reduce_transform_sum += milliseconds;
+		cudaEventElapsedTime(&milliseconds, round_start, reduce_transform);
+		total += milliseconds;
+#endif
 	}
+
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_FAST
+	std::cout << community.graph.edge_destination.size() << ",";
+	std::cout << analyzed << ",";
+	std::cout << (float)(analyzed) / community.graph.edge_destination.size() << ",";
+	std::cout << copy_sum << ",";
+	std::cout << transform_sum << ",";
+	std::cout << reduce_transform_sum << ",";
+	std::cout << total << std::endl;
+#endif
 }
 
 
