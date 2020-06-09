@@ -9,6 +9,7 @@
 #include <fstream>
 #include <set>
 #include <vector>
+#include <map>
 
 
 using namespace std;
@@ -36,12 +37,8 @@ GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 		while (f >> a >> b) {
 			node_set.insert(a);
 			node_set.insert(b);
-			if (a > b) {
-				edge_set.insert(std::pair<int, int>(b, a));
-			}
-			else {
-				edge_set.insert(std::pair<int, int>(a, b));
-			}
+			edge_set.insert(make_pair(a,b));
+
 		}
 	}
 
@@ -65,7 +62,7 @@ GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 		//todo parsing 
 	}
 	else {
-		for (std::set<pair<int, int>>::iterator it = edge_set.begin(); it != edge_set.end(); ++it) {
+		for (auto it = edge_set.begin(); it != edge_set.end(); ++it) {
 			edge_source[i] = it->first;
 			edge_destination[i] = it->second;
 			weights[i] = 1;
@@ -78,6 +75,7 @@ GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 		}
 
 		total_weight = n_links;
+		min_value  = *node_set.begin();
 
 		cout<< "Graph Host created! Name: " << name << ", nodes: " << n_nodes << ", edges: " << n_links << endl;
 

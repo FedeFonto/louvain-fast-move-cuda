@@ -27,7 +27,7 @@ static void select_self_node(
 
 void OptimizationPhase::optimize_fast() {
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_FAST
-	cudaEvent_t  round_start, copy, sort, reduce_sort, self_c, transform, reduce_transform;
+	cudaEvent_t  round_start, copy, transform, reduce_transform;
 	cudaEventCreate(&round_start);
 	cudaEventCreate(&copy);
 	cudaEventCreate(&transform);
@@ -93,6 +93,15 @@ void OptimizationPhase::optimize_fast() {
 			return;
 		}
 
+
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_FAST
+		cudaEventRecord(copy);
+		cudaEventSynchronize(copy);
+		cudaEventElapsedTime(&milliseconds, round_start, copy);
+
+		analyzed += n_edge_in_buckets;
+		copy_sum += milliseconds;
+#endif
 
 		auto self_community = thrust::device_vector<float>(community.graph.n_nodes, 0);
 

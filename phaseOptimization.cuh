@@ -37,6 +37,7 @@ private:
 	int execution_number = 0;
 
 	const static int adaptive = 4;
+	bool earlyStopDisable = 0;
 
 	MODE mode;
 	HashMap* hashmap;
@@ -47,10 +48,12 @@ private:
 
 	
 
-	OptimizationPhase(Community& c, MODE m) :
+	OptimizationPhase(Community& c, MODE m, bool esd) :
 		mode(m),
 		neighboorhood_change(thrust::device_vector<bool>(c.graph.n_nodes, true)),
-		community(c){
+		community(c),
+		earlyStopDisable(esd)
+	{
 	
 		its_changed = thrust::device_vector<bool>(community.graph.n_nodes, false);
 
@@ -189,8 +192,8 @@ private:
 	}
 
 public:
-	static void run(Community& c, MODE mode) {
-		OptimizationPhase optimizer = OptimizationPhase(c, mode);
+	static void run(Community& c, MODE mode, bool earlyStop) {
+		OptimizationPhase optimizer = OptimizationPhase(c, mode, earlyStop);
 
 #if PRINT_PERFORMANCE_LOG
 		cudaEvent_t start, stop;
