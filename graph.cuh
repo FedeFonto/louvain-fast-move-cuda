@@ -51,6 +51,18 @@ struct GraphDevice {
 		edge_destination = g.edge_destination;
 		weights = g.weights;
 
+		thrust::transform(edge_source.begin(),
+			edge_source.end(),
+			thrust::make_constant_iterator(g.min_value),
+			edge_source.begin(),
+			thrust::minus<float>());
+
+		thrust::transform(edge_destination.begin(),
+			edge_destination.end(),
+			thrust::make_constant_iterator(g.min_value),
+			edge_destination.begin(),
+			thrust::minus<float>());
+
 		n_of_neighboor = thrust::device_vector<unsigned int>(n_nodes);
 		tot_weight_per_nodes = thrust::device_vector<unsigned int>(n_nodes);
 		neighboorhood_sum = thrust::device_vector<unsigned int>(n_nodes);

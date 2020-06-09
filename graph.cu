@@ -26,7 +26,7 @@ GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 
 	int a, b;
 	auto node_set = set<int>();
-	auto edge_set = map<pair<int, int>, int>();
+	auto edge_set = set<pair<int, int>>();
 
 	printf("Start Parsing...\n");
 
@@ -37,7 +37,7 @@ GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 		while (f >> a >> b) {
 			node_set.insert(a);
 			node_set.insert(b);
-			edge_set[{a, b}] += 1;
+			edge_set.insert(make_pair(a,b));
 
 		}
 	}
@@ -63,18 +63,19 @@ GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 	}
 	else {
 		for (auto it = edge_set.begin(); it != edge_set.end(); ++it) {
-			edge_source[i] = it->first.first;
-			edge_destination[i] = it->first.second;
-			weights[i] = it->second;
+			edge_source[i] = it->first;
+			edge_destination[i] = it->second;
+			weights[i] = 1;
 
-			edge_source[i + 1] = it->first.second;
-			edge_destination[i + 1] = it->first.first;
-			weights[i + 1] = it->second;
+			edge_source[i + 1] = it->second;
+			edge_destination[i + 1] = it->first;
+			weights[i + 1] = 1;
 
 			i += 2;
 		}
 
 		total_weight = n_links;
+		min_value  = *node_set.begin();
 
 		cout<< "Graph Host created! Name: " << name << ", nodes: " << n_nodes << ", edges: " << n_links << endl;
 
