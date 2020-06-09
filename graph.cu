@@ -9,6 +9,7 @@
 #include <fstream>
 #include <set>
 #include <vector>
+#include <map>
 
 
 using namespace std;
@@ -25,7 +26,7 @@ GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 
 	int a, b;
 	auto node_set = set<int>();
-	auto edge_set = set<pair<int, int>>();
+	auto edge_set = map<pair<int, int>, int>();
 
 	printf("Start Parsing...\n");
 
@@ -36,12 +37,8 @@ GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 		while (f >> a >> b) {
 			node_set.insert(a);
 			node_set.insert(b);
-			if (a > b) {
-				edge_set.insert(std::pair<int, int>(b, a));
-			}
-			else {
-				edge_set.insert(std::pair<int, int>(a, b));
-			}
+			edge_set[{a, b}] += 1;
+
 		}
 	}
 
@@ -65,14 +62,14 @@ GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 		//todo parsing 
 	}
 	else {
-		for (std::set<pair<int, int>>::iterator it = edge_set.begin(); it != edge_set.end(); ++it) {
-			edge_source[i] = it->first;
-			edge_destination[i] = it->second;
-			weights[i] = 1;
+		for (auto it = edge_set.begin(); it != edge_set.end(); ++it) {
+			edge_source[i] = it->first.first;
+			edge_destination[i] = it->first.second;
+			weights[i] = it->second;
 
-			edge_source[i + 1] = it->second;
-			edge_destination[i + 1] = it->first;
-			weights[i + 1] = 1;
+			edge_source[i + 1] = it->first.second;
+			edge_destination[i + 1] = it->first.first;
+			weights[i + 1] = it->second;
 
 			i += 2;
 		}

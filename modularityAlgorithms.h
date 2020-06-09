@@ -37,7 +37,7 @@ private:
 			cudaEventRecord(r_start);
 #endif
 			old_modularity = C.modularity;
-			OptimizationPhase::run(C, mode);
+			OptimizationPhase::run(C, mode, iteration==0);
 
 #if PRINT_PERFORMANCE_LOG
 			cudaEventRecord(r_stop);
