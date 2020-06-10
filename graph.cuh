@@ -63,6 +63,19 @@ struct GraphDevice {
 			weights.begin()
 		);
 
+		thrust::transform(edge_source.begin(),
+			edge_source.end(),
+			thrust::make_constant_iterator(g.min_id),
+			edge_source.begin(),
+			thrust::minus<int>());
+
+		thrust::transform(edge_destination.begin(),
+			edge_destination.end(),
+			thrust::make_constant_iterator(g.min_id),
+			edge_destination.begin(),
+			thrust::minus<int>());
+
+
 		thrust::reduce_by_key(
 			edge_source.begin(),
 			edge_source.end(),
