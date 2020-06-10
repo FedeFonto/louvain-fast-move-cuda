@@ -26,7 +26,7 @@ private:
 		cudaEventRecord(start);
 
 		int iteration = 0;
-		float old_modularity = 0;
+		double old_modularity = 0;
 		bool continue_optimization = false;
 		do {
 #if PRINT_PERFORMANCE_LOG

@@ -156,8 +156,8 @@ private:
 
 
 	void internal_run() {
-		float old_modularity = 0;
-		float delta = 0;
+		double old_modularity = 0;
+		double delta = 0;
 
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 
