@@ -62,7 +62,7 @@ struct SplitIterator : public thrust::unary_function<thrust::tuple<unsigned long
 template<typename T>
 struct Square : public thrust::unary_function<T, T> {
 	__host__ __device__
-	T operator()(T d) {
+	double operator()(T d) {
 		return d * d;
 	};
 

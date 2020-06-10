@@ -21,7 +21,7 @@ struct DeltaModularityHash : public thrust::unary_function <thrust::tuple<unsign
 		return value;
 	};
 
-	DeltaModularityHash(float* w, float* n, float m, float* s, unsigned int* c) :
+	DeltaModularityHash(float* w, float* n, double m, float* s, unsigned int* c) :
 		community_weight(w), nodes_weight(n), total_weight(m), self_community(s), communities(c) {};
 };
 
@@ -40,7 +40,7 @@ struct DeltaModularitySort : public thrust::unary_function <thrust::tuple<unsign
 		return value;
 	};
 
-	DeltaModularitySort(float* w, float* n, float m, float* s, unsigned int* c) :
+	DeltaModularitySort(float* w, float* n, double m, float* s, unsigned int* c) :
 		community_weight(w), nodes_weight(n), total_weight(m), self_community(s), communities(c) {};
 };
 
