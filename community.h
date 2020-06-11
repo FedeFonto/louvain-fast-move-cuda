@@ -15,7 +15,7 @@ typedef thrust::zip_iterator<thrust::tuple<thrust::device_vector<unsigned int>::
 struct Community {
 	GraphDevice graph;
 	thrust::device_vector<unsigned int> communities;
-	thrust::device_vector<float> communities_weight;
+	thrust::device_vector<double> communities_weight;
 
 	thrust::device_vector<unsigned int> best_communities;
 
@@ -33,7 +33,7 @@ struct Community {
 		cudaStreamCreate(&streams[1]);
 		n_of_best_communities = graph.n_nodes;
 		communities = thrust::device_vector<unsigned int>(graph.n_nodes);
-		communities_weight = thrust::device_vector<float>(graph.n_nodes);
+		communities_weight = thrust::device_vector<double>(graph.n_nodes);
 		thrust::sequence(thrust::cuda::par.on(streams[0]), communities.begin(), communities.end(), 0);
 		thrust::copy(thrust::cuda::par.on(streams[1]),  graph.tot_weight_per_nodes.begin(), graph.tot_weight_per_nodes.end(), communities_weight.begin());
 

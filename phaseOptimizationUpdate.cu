@@ -16,9 +16,10 @@ static void update_value_kernel_hash(
 	unsigned int n_nodes,
 	unsigned long long* community_pair,
 	unsigned int* community,
-	float* community_weight,
+	double* community_weight,
 	float* nodes_weight,
-	bool* its_changed
+	bool* its_changed,
+	unsigned* error
 ) {
 	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
 	if (id < n_nodes) {
@@ -31,7 +32,9 @@ static void update_value_kernel_hash(
 		}
 		else {
 			atomicAdd(&community_weight[c], nodes_weight[node]);
-			atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
+			auto a = atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
+			if (a + nodes_weight[node] * -1 == a)
+				atomicAdd(error, 1);
 			community[node] = c;
 			its_changed[node] = true;
 		}
@@ -45,9 +48,11 @@ static void update_value_kernel_sort(
 	unsigned int* community_dest,
 	float* delta_value,
 	unsigned int* community,
-	float* community_weight,
+	double* community_weight,
 	float* nodes_weight,
-	bool* its_changed
+	bool* its_changed,
+	unsigned* error
+
 ) {
 	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
 	if (id < n_nodes) {
@@ -58,7 +63,9 @@ static void update_value_kernel_sort(
 		}
 		else {
 			atomicAdd(&community_weight[c], nodes_weight[node]);
-			atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
+			auto a = atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
+			if (a + nodes_weight[node] * -1 == a)
+				atomicAdd(error, 1);
 			community[node] = c;
 			its_changed[node] = true;
 		}
@@ -72,9 +79,10 @@ static void update_value_kernel_fast(
 	unsigned int* community_dest,
 	float* delta_value,
 	unsigned int* community,
-	float* community_weight,
+	double* community_weight,
 	float* nodes_weight,
-	bool* its_changed
+	bool* its_changed, 
+	unsigned* error
 ) {
 	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
 	if (id < n_nodes) {
@@ -85,7 +93,9 @@ static void update_value_kernel_fast(
 		}
 		else {
 			atomicAdd(&community_weight[c], nodes_weight[node]);
-			atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
+			auto a = atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
+			if (a + nodes_weight[node] * -1 == a)
+				atomicAdd(error, 1);
 			community[node] = c;
 			its_changed[node] = true;
 		}
@@ -117,7 +127,7 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 	cudaEventCreate(&b);
 	cudaEventRecord(a);
 #endif
-
+	auto error = thrust::device_vector<unsigned>(1, 0);
 	thrust::fill(its_changed.begin(), its_changed.end(), false);
 	thrust::fill(neighboorhood_change.begin(), neighboorhood_change.end(), false);
 	int n_blocks;
@@ -131,7 +141,8 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 			thrust::raw_pointer_cast(community.communities.data()),
 			thrust::raw_pointer_cast(community.communities_weight.data()),
 			thrust::raw_pointer_cast(community.graph.tot_weight_per_nodes.data()),
-			thrust::raw_pointer_cast(its_changed.data())
+			thrust::raw_pointer_cast(its_changed.data()),
+			thrust::raw_pointer_cast(error.data())
 			);
 	} else if (useHash) {
 		n_blocks = (community.graph.n_nodes + BLOCK_SIZE - 1) / BLOCK_SIZE;
@@ -141,7 +152,9 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 			thrust::raw_pointer_cast(community.communities.data()),
 			thrust::raw_pointer_cast(community.communities_weight.data()),
 			thrust::raw_pointer_cast(community.graph.tot_weight_per_nodes.data()),
-			thrust::raw_pointer_cast(its_changed.data())
+			thrust::raw_pointer_cast(its_changed.data()),
+			thrust::raw_pointer_cast(error.data())
+
 			);
 	}
 	else {
@@ -154,9 +167,12 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 			thrust::raw_pointer_cast(community.communities.data()),
 			thrust::raw_pointer_cast(community.communities_weight.data()),
 			thrust::raw_pointer_cast(community.graph.tot_weight_per_nodes.data()),
-			thrust::raw_pointer_cast(its_changed.data())
+			thrust::raw_pointer_cast(its_changed.data()),
+			thrust::raw_pointer_cast(error.data())
 			);
 	}
+
+	std::cout << "ERRORS: " << error[0] << std::endl;
 
 #if PRINT_PERFORMANCE_LOG && INCLUDE_UPDATES
 	cudaEventRecord(b);
