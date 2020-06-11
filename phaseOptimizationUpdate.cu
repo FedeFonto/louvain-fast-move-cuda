@@ -31,10 +31,12 @@ static void update_value_kernel_hash(
 			return;
 		}
 		else {
-			atomicAdd(&community_weight[c], nodes_weight[node]);
-			auto a = atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
-			if (a + nodes_weight[node] * -1 == a)
+			auto a = atomicAdd(&community_weight[c], nodes_weight[node]);
+			if (a + nodes_weight[node] == a)
 				atomicAdd(error, 1);
+			a = atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
+			if (a + nodes_weight[node] * -1 == a)
+				atomicAdd(&error[1], 1);
 			community[node] = c;
 			its_changed[node] = true;
 		}
@@ -62,11 +64,12 @@ static void update_value_kernel_sort(
 			return;
 		}
 		else {
-			atomicAdd(&community_weight[c], nodes_weight[node]);
-			auto a = atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
-			if (a + nodes_weight[node] * -1 == a)
+			auto a = atomicAdd(&community_weight[c], nodes_weight[node]);
+			if (a + nodes_weight[node] == a)
 				atomicAdd(error, 1);
-			community[node] = c;
+			a = atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
+			if (a + nodes_weight[node] * -1 == a)
+				atomicAdd(&error[1], 1);
 			its_changed[node] = true;
 		}
 	}
@@ -92,10 +95,12 @@ static void update_value_kernel_fast(
 			return;
 		}
 		else {
-			atomicAdd(&community_weight[c], nodes_weight[node]);
-			auto a = atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
-			if (a + nodes_weight[node] * -1 == a)
+			auto a = atomicAdd(&community_weight[c], nodes_weight[node]);
+			if (a + nodes_weight[node] == a)
 				atomicAdd(error, 1);
+			a = atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
+			if (a + nodes_weight[node] * -1 == a)
+				atomicAdd(&error[1], 1);
 			community[node] = c;
 			its_changed[node] = true;
 		}
@@ -127,7 +132,7 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 	cudaEventCreate(&b);
 	cudaEventRecord(a);
 #endif
-	auto error = thrust::device_vector<unsigned>(1, 0);
+	auto error = thrust::device_vector<unsigned>(2, 0);
 	thrust::fill(its_changed.begin(), its_changed.end(), false);
 	thrust::fill(neighboorhood_change.begin(), neighboorhood_change.end(), false);
 	int n_blocks;
@@ -172,7 +177,7 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 			);
 	}
 
-	std::cout << "ERRORS: " << error[0] << std::endl;
+	std::cout << "ERRORS ADD: " << error[0] <<", ERRORS SUB: " << error[1] << std::endl;
 
 #if PRINT_PERFORMANCE_LOG && INCLUDE_UPDATES
 	cudaEventRecord(b);
