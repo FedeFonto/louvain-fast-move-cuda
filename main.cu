@@ -6,7 +6,7 @@ int main()
     std::vector<std::string> dataset = { "out.patentcite",  "soc-pokec-relationships.txt", "coPapersDBLP.mtx", "packing-500x100x100-b050.mtx","soc-LiveJournal.txt" ,"out.wikipedia_link_ja",  "hollywood-2009.mtx","out.wikipedia_link_it" , "out.wikipedia_link_fr","com-orkut.ungraph.txt", "out.dbpedia-link", "indochina-2004.mtx" };
     std::vector<int> skip = { 2, 0, 129, 141, 0, 1, 49,  1, 1, 0, 2, 48 };
 
-   
+    int round = 1;
     //GraphHost g = GraphHost::GraphHost("graph-power-law-huge-2.edge", false, 0);
 
     for(int i = 0; i< dataset.size(); i++)
@@ -17,7 +17,7 @@ int main()
             std::cout << std::endl;
 
             try {
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < round; i++) {
                     std::cout << std::endl << "################### HASH " << i << " ##################" << std::endl;
                     auto C = ModularityAlgorithms::Louvain(g, HASH);
                     std::cout << "N of community found:" << C.n_of_best_communities << std::endl;
@@ -27,7 +27,7 @@ int main()
                 std::cout << "Bad Alloc" << std::endl;
             }
             try {
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < round; i++) {
                     std::cout << std::endl << "################### SORT "<< i << " ##################" << std::endl;
                     auto C = ModularityAlgorithms::Louvain(g, SORT);
                     std::cout << "N of community found:" << C.n_of_best_communities << std::endl;

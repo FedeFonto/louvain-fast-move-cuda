@@ -56,7 +56,7 @@ struct Community {
 
 	void update() {
 		communities = thrust::device_vector<unsigned int>(graph.n_nodes);
-		communities_weight = thrust::device_vector<float>(graph.n_nodes);
+		communities_weight = thrust::device_vector<double>(graph.n_nodes);
 		thrust::sequence(communities.begin(), communities.end(), 0);
 		thrust::copy(graph.tot_weight_per_nodes.begin(), graph.tot_weight_per_nodes.end(), communities_weight.begin());
 		start = thrust::make_zip_iterator(thrust::make_tuple(graph.edge_source.begin(), graph.edge_destination.begin(), graph.weights.begin()));
@@ -70,9 +70,9 @@ struct Community {
 			thrust::cuda::par.on(streams[0]),
 			communities_weight.begin(),
 			communities_weight.end(),
-			Square<float>(),
+			Square<double>(),
 			0,
-			thrust::plus<float>()
+			thrust::plus<double>()
 		);
 
 		auto values_weight = thrust::device_vector<float>(graph.n_links * 2);

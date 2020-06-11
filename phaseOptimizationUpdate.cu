@@ -70,6 +70,7 @@ static void update_value_kernel_sort(
 			a = atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
 			if (a + nodes_weight[node] * -1 == a)
 				atomicAdd(&error[1], 1);
+			community[node] = c;
 			its_changed[node] = true;
 		}
 	}
