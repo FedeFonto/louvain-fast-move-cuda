@@ -9,7 +9,7 @@
 
 
 
-typedef thrust::zip_iterator<thrust::tuple<thrust::device_vector<unsigned int>::iterator, thrust::device_vector<unsigned int>::iterator, thrust::device_vector<float>::iterator>> zip_pointer;
+typedef thrust::zip_iterator<thrust::tuple<thrust::device_vector<unsigned int>::iterator, thrust::device_vector<unsigned int>::iterator, thrust::device_vector<unsigned>::iterator>> zip_pointer;
 
 
 struct Community {
@@ -65,17 +65,24 @@ struct Community {
 	}
 
 
-	void compute_modularity() {		
-		double community_tot = thrust::transform_reduce(
+	void compute_modularity() {	
+		auto square_communtity = thrust::device_vector<double>(graph.n_links * 2);
+
+		thrust::transform(
 			thrust::cuda::par.on(streams[0]),
 			communities_weight.begin(),
 			communities_weight.end(),
-			Square<double>(),
-			0,
-			thrust::plus<double>()
+			square_communtity.begin(),
+			Square<double>()
 		);
 
-		auto values_weight = thrust::device_vector<float>(graph.n_links * 2);
+		double community_tot = thrust::reduce(
+			thrust::cuda::par.on(streams[0]),
+			square_communtity.begin(),
+			square_communtity.end()
+		);
+
+		auto values_weight = thrust::device_vector<unsigned>(graph.n_links * 2);
 		
 		auto p = thrust::copy_if(
 			thrust::cuda::par.on(streams[1]),
@@ -86,11 +93,13 @@ struct Community {
 			ActualNeighboorhood(thrust::raw_pointer_cast(communities.data()))
 		);
 
-		double nodes_2_self_community = thrust::reduce(
+		unsigned nodes_2_self_community = thrust::reduce(
 			thrust::cuda::par.on(streams[1]),
 			values_weight.begin(),
-			values_weight.end()
+			p
 		);
+
+		std::cout << std::fixed << "VALUES : "<< nodes_2_self_community << " " << community_tot << " " << graph.total_weight << std::endl;
 		
 		modularity = nodes_2_self_community / (2 * graph.total_weight) - (community_tot)/ (4 * graph.total_weight * graph.total_weight);
 

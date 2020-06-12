@@ -58,7 +58,7 @@ GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 	auto ss = 2 * n_links;
 	edge_source = thrust::host_vector<int>(ss);
 	edge_destination = thrust::host_vector<int>(ss);
-	weights = thrust::host_vector<float>(ss);
+	weights = thrust::host_vector<unsigned>(ss);
 
 	int i = 0;
 	if (weighted) {

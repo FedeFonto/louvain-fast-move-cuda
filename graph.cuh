@@ -23,13 +23,13 @@ struct GraphDevice {
 	*/
 	 
 	thrust::device_vector<unsigned int> n_of_neighboor;
-	thrust::device_vector<float> tot_weight_per_nodes;
+	thrust::device_vector<unsigned> tot_weight_per_nodes;
 	thrust::device_vector<unsigned int> neighboorhood_sum;
 
 
 	thrust::device_vector<unsigned int> edge_source;
 	thrust::device_vector<unsigned int> edge_destination;
-	thrust::device_vector<float> weights;
+	thrust::device_vector<unsigned int> weights;
 
 
 	GraphDevice(const GraphDevice& g) {

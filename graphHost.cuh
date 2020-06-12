@@ -12,7 +12,7 @@ struct GraphHost {
 
 	thrust::host_vector<unsigned int> edge_source;
 	thrust::host_vector<unsigned int> edge_destination;
-	thrust::host_vector<float> weights;
+	thrust::host_vector<unsigned> weights;
 
 	GraphHost(std::string name, bool weighted, int skip_line);
 };

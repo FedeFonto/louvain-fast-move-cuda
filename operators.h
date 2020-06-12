@@ -6,9 +6,9 @@
 #include "operatorsDelta.h"
 #include <thrust/functional.h>
 
-struct CountNotZero : public thrust::unary_function<float, int> {
+struct CountNotZero : public thrust::unary_function<double, int> {
 	__host__ __device__
-	int operator()(float x) {
+	int operator()(double x) {
 		return x > 0 ? 1 : 0;
 	}
 

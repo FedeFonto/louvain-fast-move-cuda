@@ -17,7 +17,7 @@ static inline int hash_position(unsigned long long l, int i, unsigned int size) 
 
 
 __device__
-static bool insertHashTable(unsigned int k1,unsigned int k2, float v, unsigned int size, unsigned long long* pointer_k, float* pointer_v, int* conflict_stats) {
+static bool insertHashTable(unsigned int k1,unsigned int k2, unsigned int v, unsigned int size, unsigned long long* pointer_k, float* pointer_v, int* conflict_stats) {
 	unsigned long long l = (((unsigned long long) k1) << 32) | k2;
 
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
@@ -46,7 +46,7 @@ static bool insertHashTable(unsigned int k1,unsigned int k2, float v, unsigned i
 __global__
 static void kernel_optimization(unsigned int* k1,
 								unsigned int* k2,
-								float* v,
+								unsigned int* v,
 								int offset,
 								int n_of_elem ,
 								unsigned int size,
@@ -75,7 +75,7 @@ static void kernel_optimization(unsigned int* k1,
 __global__
 static void kernel_aggregation(	unsigned int* k1,
 								unsigned int* k2,
-								float* v,
+								unsigned int* v,
 								int n_of_elem,
 								unsigned int size,
 								unsigned long long* pointer_k1,
@@ -126,7 +126,7 @@ struct HashMap {
 
 	void fill_for_optimization(	unsigned int* k1,
 								unsigned int* k2,
-								float* v, 
+								unsigned int* v, 
 								int offset, 
 								int n_of_elem, 
 								int n_nodes,
@@ -142,7 +142,7 @@ struct HashMap {
 
 	void fill_for_aggregation(	unsigned int* k1,
 								unsigned int* k2,
-								float* v,
+								unsigned int* v,
 								int n_of_elem,
 								unsigned int* communities,
 								unsigned int* map){

@@ -52,7 +52,7 @@ struct AggregationPhase {
 
 				auto edge_source = thrust::device_vector<unsigned int>(n_edge);
 				auto edge_destination = thrust::device_vector<unsigned int>(n_edge);
-				auto weights = thrust::device_vector<float>(n_edge);
+				auto weights = thrust::device_vector<unsigned int>(n_edge);
 
 				auto old_start = thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.begin(), community.graph.edge_destination.begin(), community.graph.weights.begin()));
 				auto old_end = thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.end(), community.graph.edge_destination.end(), community.graph.weights.end()));
@@ -73,9 +73,9 @@ struct AggregationPhase {
 					weights.begin()
 				);
 
-				community.graph.edge_source = thrust::device_vector<int>(n_edge);
-				community.graph.edge_destination = thrust::device_vector<int>(n_edge);
-				community.graph.weights = thrust::device_vector<float>(n_edge);
+				community.graph.edge_source = thrust::device_vector<unsigned>(n_edge);
+				community.graph.edge_destination = thrust::device_vector<unsigned>(n_edge);
+				community.graph.weights = thrust::device_vector<unsigned>(n_edge);
 				community.start = thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.begin(), community.graph.edge_destination.begin(), community.graph.weights.begin()));
 				community.end = thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.end(), community.graph.edge_destination.end(), community.graph.weights.end()));
 
@@ -98,15 +98,14 @@ struct AggregationPhase {
 				//	float c = new_graph.weights[i];
 				//	printf("%d %d %.10f\n", a, b, c);
 				//}
-
 				community.graph.edge_source.resize(n_reduced_edges);
 				community.graph.edge_destination.resize(n_reduced_edges);
 				community.graph.weights.resize(n_reduced_edges);
 				community.graph.n_links = n_reduced_edges / 2;
-
+				
 			}
 			else {
-
+				
 				HashMap h = HashMap(n_edge + n_edge / 3);
 				
 				h.fill_for_aggregation(
@@ -128,7 +127,7 @@ struct AggregationPhase {
 
 				community.graph.edge_source = thrust::device_vector<unsigned int>(n_reduced_edges, 0);
 				community.graph.edge_destination = thrust::device_vector<unsigned int>(n_reduced_edges, 0);
-				community.graph.weights = thrust::device_vector<float>(n_reduced_edges, 0);
+				community.graph.weights = thrust::device_vector<unsigned>(n_reduced_edges, 0);
 				community.start = thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.begin(), community.graph.edge_destination.begin(), community.graph.weights.begin()));
 				community.end = thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.end(), community.graph.edge_destination.end(), community.graph.weights.end()));
 
@@ -144,7 +143,7 @@ struct AggregationPhase {
 				
 
 
-			community.graph.tot_weight_per_nodes = thrust::device_vector<float>(community.graph.n_nodes);
+			community.graph.tot_weight_per_nodes = thrust::device_vector<unsigned>(community.graph.n_nodes);
 
 			auto value_input = thrust::make_zip_iterator(thrust::make_tuple(community.graph.weights.begin(), thrust::make_constant_iterator((unsigned int)1)));
 			auto value_output = thrust::make_zip_iterator(thrust::make_tuple(community.graph.tot_weight_per_nodes.begin(), community.graph.n_of_neighboor.begin()));
@@ -160,7 +159,7 @@ struct AggregationPhase {
 				thrust::make_discard_iterator(),
 				value_output,
 				thrust::equal_to<unsigned int>(),
-				PairSum<float, unsigned int>()
+				PairSum<unsigned, unsigned int>()
 			);
 
 

@@ -18,11 +18,11 @@ struct TestTupleValue : public thrust::unary_function<thrust::tuple<unsigned int
 	TestTupleValue(bool* c) : changed(c) {};
 };
 
-struct MakeCommunityDest : public thrust::unary_function<thrust::tuple<unsigned int, unsigned int, float>, thrust::tuple<unsigned int, unsigned int, float>> {
+struct MakeCommunityDest : public thrust::unary_function<thrust::tuple<unsigned int, unsigned int, unsigned>, thrust::tuple<unsigned int, unsigned int, float>> {
 	unsigned int* values;
 
 	__host__ __device__
-		thrust::tuple<unsigned int, unsigned int, float> operator()(thrust::tuple<unsigned int, unsigned int, float> d) {
+		thrust::tuple<unsigned int, unsigned int, float> operator()(thrust::tuple<unsigned int, unsigned int, unsigned> d) {
 		return thrust::make_tuple<int, int, float>(
 			thrust::get<0>(d),
 			values[thrust::get<1>(d)],
@@ -34,13 +34,13 @@ struct MakeCommunityDest : public thrust::unary_function<thrust::tuple<unsigned 
 };
 
 
-struct MakeCommunityPair : public thrust::unary_function<thrust::tuple<unsigned int, unsigned int, float>, thrust::tuple<unsigned int, unsigned int, float>> {
+struct MakeCommunityPair : public thrust::unary_function<thrust::tuple<unsigned int, unsigned int, unsigned>, thrust::tuple<unsigned int, unsigned int, unsigned>> {
 	unsigned int* communities;
 	unsigned int* map;
 
 	__host__ __device__
-		thrust::tuple<unsigned int, unsigned int, float> operator()(thrust::tuple<unsigned int, unsigned int, float> d) {
-		return thrust::make_tuple<int, int, float>(
+		thrust::tuple<unsigned int, unsigned int, unsigned> operator()(thrust::tuple<unsigned int, unsigned int, unsigned> d) {
+		return thrust::make_tuple<int, int, unsigned>(
 			map[communities[thrust::get<0>(d)]] - 1,
 			map[communities[thrust::get<1>(d)]] - 1,
 			thrust::get<2>(d)
@@ -64,11 +64,11 @@ struct MakeCommunityBest : public thrust::unary_function<unsigned int, unsigned 
 };
 
 
-struct ActualNeighboorhood : public thrust::unary_function <thrust::tuple<unsigned int, unsigned int, float>, bool> {
+struct ActualNeighboorhood : public thrust::unary_function <thrust::tuple<unsigned int, unsigned int, unsigned>, bool> {
 	unsigned int* communities;
 
 	__host__ __device__
-		bool operator()(thrust::tuple<unsigned int, unsigned int, float> d) {
+		bool operator()(thrust::tuple<unsigned int, unsigned int, unsigned int> d) {
 		if (communities[thrust::get<0>(d)] == thrust::get<1>(d)) {
 			return true;
 		}

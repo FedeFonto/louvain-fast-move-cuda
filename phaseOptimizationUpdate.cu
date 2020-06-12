@@ -17,7 +17,7 @@ static void update_value_kernel_hash(
 	unsigned long long* community_pair,
 	unsigned int* community,
 	double* community_weight,
-	float* nodes_weight,
+	unsigned* nodes_weight,
 	bool* its_changed,
 	unsigned* error
 ) {
@@ -31,10 +31,11 @@ static void update_value_kernel_hash(
 			return;
 		}
 		else {
-			auto a = atomicAdd(&community_weight[c], nodes_weight[node]);
+			double v = nodes_weight[node];
+			auto a = atomicAdd(&community_weight[c], v);
 			if (a + nodes_weight[node] == a)
 				atomicAdd(error, 1);
-			a = atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
+			a = atomicAdd(&community_weight[community[node]], v* -1);
 			if (a + nodes_weight[node] * -1 == a)
 				atomicAdd(&error[1], 1);
 			community[node] = c;
@@ -51,7 +52,7 @@ static void update_value_kernel_sort(
 	float* delta_value,
 	unsigned int* community,
 	double* community_weight,
-	float* nodes_weight,
+	unsigned* nodes_weight,
 	bool* its_changed,
 	unsigned* error
 
@@ -64,10 +65,12 @@ static void update_value_kernel_sort(
 			return;
 		}
 		else {
-			auto a = atomicAdd(&community_weight[c], nodes_weight[node]);
+			double v = nodes_weight[node];
+
+			auto a = atomicAdd(&community_weight[c],v);
 			if (a + nodes_weight[node] == a)
 				atomicAdd(error, 1);
-			a = atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
+			a = atomicAdd(&community_weight[community[node]], v * -1);
 			if (a + nodes_weight[node] * -1 == a)
 				atomicAdd(&error[1], 1);
 			community[node] = c;
@@ -84,10 +87,11 @@ static void update_value_kernel_fast(
 	float* delta_value,
 	unsigned int* community,
 	double* community_weight,
-	float* nodes_weight,
+	unsigned* nodes_weight,
 	bool* its_changed, 
 	unsigned* error
 ) {
+
 	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
 	if (id < n_nodes) {
 		int node = nodes_to_update[id];
@@ -96,10 +100,12 @@ static void update_value_kernel_fast(
 			return;
 		}
 		else {
-			auto a = atomicAdd(&community_weight[c], nodes_weight[node]);
+			double v = nodes_weight[node];
+
+			auto a = atomicAdd(&community_weight[c], v);
 			if (a + nodes_weight[node] == a)
 				atomicAdd(error, 1);
-			a = atomicAdd(&community_weight[community[node]], nodes_weight[node] * -1);
+			a = atomicAdd(&community_weight[community[node]], v * -1);
 			if (a + nodes_weight[node] * -1 == a)
 				atomicAdd(&error[1], 1);
 			community[node] = c;
