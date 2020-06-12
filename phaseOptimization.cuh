@@ -9,12 +9,13 @@
 #include <thrust/sort.h>
 #include <thrust/reduce.h>
 #include <thrust/extrema.h>
-
+#include "hashmap.cuh"
 
 
 class OptimizationPhase {
 private:
 	thrust::device_vector<bool> neighboorhood_change;
+	thrust::device_vector<bool> its_changed;
 
 	thrust::device_vector<unsigned int> key_node_source;
 	thrust::device_vector<unsigned int> key_community_dest;
@@ -24,68 +25,186 @@ private:
 	thrust::device_vector<unsigned int> reduced_key_dest;
 	thrust::device_vector<float> reduced_value;
 
+	thrust::device_vector<unsigned int> final_node;
+	thrust::device_vector<unsigned int> final_community;
+	thrust::device_vector<float> final_value;
+
+	thrust::device_vector<unsigned long long int> final_pair;
+
+	unsigned int nodes_considered = 0;
+
 	Community& community;
 	int execution_number = 0;
 
+	const static int adaptive = 4;
 
-	OptimizationPhase(Community& c) :
+	MODE mode;
+	HashMap* hashmap;
+
+#if PRINT_PERFORMANCE_LOG
+	std::vector<float> performance = std::vector<float>();
+#endif
+
+	
+
+	OptimizationPhase(Community& c, MODE m) :
+		mode(m),
 		neighboorhood_change(thrust::device_vector<bool>(c.graph.n_nodes, true)),
 		community(c){
 	
-		key_node_source = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
-		key_community_dest = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
-		values_weight = thrust::device_vector<float>(community.graph.edge_source);
+		its_changed = thrust::device_vector<bool>(community.graph.n_nodes, false);
 
-		reduced_key_source = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
-		reduced_key_dest = thrust::device_vector<unsigned int>(community.graph.edge_source.size());
-		reduced_value = thrust::device_vector<float>(community.graph.edge_source.size());
+		key_node_source = thrust::device_vector<unsigned int>(STEP_ROUND);
+		key_community_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
+		values_weight = thrust::device_vector<float>(STEP_ROUND);
 
+		reduced_key_source = thrust::device_vector<unsigned int>(STEP_ROUND);
+		reduced_key_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
+		reduced_value = thrust::device_vector<float>(STEP_ROUND);
+		
+		final_node = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
+		final_community = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
+		final_value = thrust::device_vector<float>(c.graph.n_nodes, -1);
 	}
 
-	void optimize();
+
+	~OptimizationPhase() {
+		if (((mode == HASH || mode == ADAPTIVE_MEMORY ) && execution_number > 1) || (mode == ADAPTIVE_SPEED && execution_number > (adaptive +1))) {
+			delete hashmap;
+		}
+	}
+
+	void swap_mode() {
+		key_node_source.clear();
+		key_node_source.shrink_to_fit();
+
+		key_community_dest.clear();
+		key_community_dest.shrink_to_fit();
+
+		values_weight.clear();
+		values_weight.shrink_to_fit();
+
+		reduced_key_source.clear();
+		reduced_key_source.shrink_to_fit();
+
+		reduced_key_dest.clear();
+		reduced_key_dest.shrink_to_fit();
+
+		reduced_value.clear();
+		reduced_value.shrink_to_fit();
+
+		final_node.clear();
+		final_node.shrink_to_fit();
+
+		final_community.clear();
+		final_community.shrink_to_fit();
+
+		final_value.clear();
+		final_value.shrink_to_fit();
+
+		final_pair = thrust::device_vector<unsigned long long int>(community.graph.n_nodes, 0);
+		hashmap = new HashMap(BUCKETS_SIZE);
+	}
+	
+
+	void optimize_hash();
+	void optimize_sort();
+	void optimize_fast();
+
+	void fast_move_update(bool value);
+
+	void optimize() {
+#if PRINT_PERFORMANCE_LOG
+		cudaEvent_t start, stop;
+		cudaEventCreate(&start);
+		cudaEventCreate(&stop);
+		cudaEventRecord(start);
+#endif
+		nodes_considered = 0;
+
+		if ((mode == ADAPTIVE_SPEED && execution_number == adaptive) || ((mode == HASH || mode == ADAPTIVE_MEMORY ) && execution_number == 1)) {
+			swap_mode();
+		}
+
+		if (execution_number == 0) {
+			thrust::fill(final_value.begin(), final_value.end(), -1);
+			optimize_fast();
+			fast_move_update(false);
+		}
+		else {
+			const bool useHash = mode == HASH || mode == ADAPTIVE_MEMORY || (mode == ADAPTIVE_SPEED && execution_number > adaptive);
+			if (useHash) {
+				thrust::fill(final_pair.begin(), final_pair.end(), 0);
+				optimize_hash();
+			}
+			//if mode == SORT or (mode == ADAPTIVE_SPEED and execution_number <= 3)
+			else {
+				thrust::fill(final_value.begin(), final_value.end(), -1);
+				optimize_sort();
+			}
+			fast_move_update(useHash);
+		}
+
+#if PRINT_PERFORMANCE_LOG
+		cudaEventRecord(stop);
+		cudaEventSynchronize(stop);
+		float milliseconds = 0;
+		cudaEventElapsedTime(&milliseconds, start, stop);
+		performance.push_back(milliseconds);
+#endif
+	};
 
 
 	void internal_run() {
-		float old_modularity = 0;
-		float delta = 0;
+		double old_modularity = 0;
+		double delta = 0;
+
+#if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
+
+		std::cout << "Optimization Phase " << MyUtils::mode_name(mode) << std::endl;
+#endif 
 
 		do {
 			old_modularity = community.modularity;
-			execution_number++;
 			optimize();
+			execution_number++;
 			community.compute_modularity();
 			delta = community.modularity - old_modularity;
-		
-		#if PRINT_DEBUG_LOG
+
+#if PRINT_DEBUG_LOG
 			printf("MODULARITY = %10f\n", community.modularity);
 			printf("Delta Modularity iteration %d: %10f \n", execution_number, delta);
-		#endif 
+#endif 
 
 		} while ((execution_number <= EARLY_STOP_LIMIT) && (delta > MODULARITY_CONVERGED_THRESHOLD));
 
 	}
 
 public:
-	static void run(Community& c, bool fastLocalMove) {
-		OptimizationPhase optimizer = OptimizationPhase(c);
+	static void run(Community& c, MODE mode) {
+		OptimizationPhase optimizer = OptimizationPhase(c, mode);
 
-		#if PRINT_PERFORMANCE_LOG
-			cudaEvent_t start, stop;
-			cudaEventCreate(&start);
-			cudaEventCreate(&stop);
-			cudaEventRecord(start);
-		#endif
-		
+#if PRINT_PERFORMANCE_LOG
+		cudaEvent_t start, stop;
+		cudaEventCreate(&start);
+		cudaEventCreate(&stop);
+		cudaEventRecord(start);
+#endif
+
 		optimizer.internal_run();
 
-		#if PRINT_PERFORMANCE_LOG
-			cudaEventRecord(stop);
-			cudaEventSynchronize(stop);
-			float milliseconds = 0;
-			cudaEventElapsedTime(&milliseconds, start, stop);
-			std::cout << "Total Optimization Time : " << milliseconds << "ms" << std::endl;		
-		#endif
+#if PRINT_PERFORMANCE_LOG
+		cudaEventRecord(stop);
+		cudaEventSynchronize(stop);
+		float milliseconds = 0;
+		cudaEventElapsedTime(&milliseconds, start, stop);
+		std::cout << std::endl << "Iteration Stats: " << std::endl;
+		for (int i = 0; i < optimizer.performance.size(); i++ )
+			std::cout << optimizer.performance[i] << "," ;
+		std::cout << milliseconds << std::endl;
+#endif
 	}
+		
 };
 
 #endif

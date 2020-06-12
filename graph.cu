@@ -14,9 +14,14 @@
 using namespace std;
 
 
-GraphHost::GraphHost(std::string name, bool weighted) {
+GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 	ifstream f;
 	f.open(name);
+	
+	string ignore;
+	for (int i = 0; i < skip_line;  i++) {
+		getline(f, ignore);
+	}
 
 	int a, b;
 	auto node_set = set<int>();
@@ -50,10 +55,10 @@ GraphHost::GraphHost(std::string name, bool weighted) {
 	}
 
 	printf("N of edges and links obtained\n");
-
-	edge_source = thrust::host_vector<int>(2 * n_links);
-	edge_destination = thrust::host_vector<int>(2 * n_links);
-	weights = thrust::host_vector<float>(2 * n_links);
+	auto ss = 2 * n_links;
+	edge_source = thrust::host_vector<int>(ss);
+	edge_destination = thrust::host_vector<int>(ss);
+	weights = thrust::host_vector<unsigned>(ss);
 
 	int i = 0;
 	if (weighted) {
@@ -65,16 +70,18 @@ GraphHost::GraphHost(std::string name, bool weighted) {
 			edge_destination[i] = it->second;
 			weights[i] = 1;
 
-			edge_source[i + 1] = it->second;
-			edge_destination[i + 1] = it->first;
-			weights[i + 1] = 1;
+			auto s = i + 1;
+			edge_source[s] = it->second;
+			edge_destination[s] = it->first;
+			weights[s] = 1;
 
 			i += 2;
 		}
 
 		total_weight = n_links;
+		min_id = *node_set.begin();
 
-		printf("Graph Host created! \n");
+		cout<< "Graph Host created! Name: " << name << ", nodes: " << n_nodes << ", edges: " << n_links << endl;
 
 	}
 };

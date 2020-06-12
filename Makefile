@@ -1,9 +1,15 @@
 
-all: phaseOptimization.o
-	nvcc -O3 main.cu phaseOptimization.o graph.o -o app
+all: phaseOptimizationUpdate.o phaseOptimizationHash.o phaseOptimizationSort.o
+	nvcc -O3 main.cu phaseOptimizationUpdate.o phaseOptimizationHash.o phaseOptimizationSort.o graph.o -o app
 
-phaseOptimization.o: graph.o
-	nvcc -dc -O3 phaseOptimization.cu 
+phaseOptimizationUpdate.o: graph.o
+	nvcc -dc -O3 phaseOptimizationUpdate.cu 
+
+phaseOptimizationHash.o: graph.o
+	nvcc -dc -O3 phaseOptimizationHash.cu 
+
+phaseOptimizationSort.o: graph.o
+	nvcc -dc -O3 phaseOptimizationSort.cu 
 
 graph.o:
 	nvcc -dc -O3 graph.cu

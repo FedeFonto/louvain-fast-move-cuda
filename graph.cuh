@@ -23,11 +23,14 @@ struct GraphDevice {
 	*/
 	 
 	thrust::device_vector<unsigned int> n_of_neighboor;
-	thrust::device_vector<float> tot_weight_per_nodes;
+	thrust::device_vector<unsigned> tot_weight_per_nodes;
+	thrust::device_vector<unsigned int> neighboorhood_sum;
+
 
 	thrust::device_vector<unsigned int> edge_source;
 	thrust::device_vector<unsigned int> edge_destination;
-	thrust::device_vector<float> weights;
+	thrust::device_vector<unsigned int> weights;
+
 
 	GraphDevice(const GraphDevice& g) {
 		n_nodes = g.n_nodes;
@@ -40,7 +43,7 @@ struct GraphDevice {
 		n_of_neighboor = g.n_of_neighboor;
 	};
 
-	GraphDevice(GraphHost g) {
+	GraphDevice(GraphHost& g) {
 		n_nodes = g.n_nodes;
 		n_links = g.n_links;
 		total_weight = g.total_weight;
@@ -50,6 +53,7 @@ struct GraphDevice {
 
 		n_of_neighboor = thrust::device_vector<unsigned int>(n_nodes);
 		tot_weight_per_nodes = thrust::device_vector<unsigned int>(n_nodes);
+		neighboorhood_sum = thrust::device_vector<unsigned int>(n_nodes);
 
 		auto key_community = thrust::make_zip_iterator(thrust::make_tuple(edge_source.begin(), edge_destination.begin()));
 
@@ -59,12 +63,31 @@ struct GraphDevice {
 			weights.begin()
 		);
 
+		thrust::transform(edge_source.begin(),
+			edge_source.end(),
+			thrust::make_constant_iterator(g.min_id),
+			edge_source.begin(),
+			thrust::minus<int>());
+
+		thrust::transform(edge_destination.begin(),
+			edge_destination.end(),
+			thrust::make_constant_iterator(g.min_id),
+			edge_destination.begin(),
+			thrust::minus<int>());
+
+
 		thrust::reduce_by_key(
 			edge_source.begin(),
 			edge_source.end(),
 			thrust::make_constant_iterator(1),
 			thrust::make_discard_iterator(),
 			n_of_neighboor.begin()
+		);
+
+		thrust::exclusive_scan(
+			n_of_neighboor.begin(),
+			n_of_neighboor.end(),
+			neighboorhood_sum.begin() 
 		);
 
 		//todo fix for weighted

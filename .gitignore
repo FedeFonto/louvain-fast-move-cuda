@@ -339,6 +339,7 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 /.vscode
+/cub-1.8.0
 /app
 /com-orkut.ungraph.txt
 /graph-power-law-small.edge
@@ -348,3 +349,7 @@ healthchecksdb
 result.txt
 
 result1.txt
+
+dataset/
+
+graph-power-law-huge-2.edge
