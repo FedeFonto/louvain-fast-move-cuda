@@ -9,6 +9,7 @@ struct GraphHost {
 	unsigned long n_links;
 	double total_weight;
 	unsigned int min_id;
+	unsigned int max_id;
 
 	thrust::host_vector<unsigned int> edge_source;
 	thrust::host_vector<unsigned int> edge_destination;

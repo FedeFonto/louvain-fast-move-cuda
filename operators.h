@@ -69,6 +69,17 @@ struct Square : public thrust::unary_function<T, T> {
 	Square() {};
 };
 
+struct MapElement : public thrust::unary_function<unsigned int, unsigned int> {
+	unsigned int* map;
+
+	__host__ __device__
+		unsigned int operator()(unsigned int d) {
+		return map[d] - 1;
+	};
+
+	MapElement(unsigned int* v) : map(v) {};
+};
+
 struct MyUtils {
 	static void print_memory_usage() {
 		// show memory usage of GPU

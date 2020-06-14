@@ -80,6 +80,7 @@ GraphHost::GraphHost(std::string name, bool weighted, int skip_line) {
 
 		total_weight = n_links;
 		min_id = *node_set.begin();
+		max_id = *node_set.rbegin();
 
 		cout<< "Graph Host created! Name: " << name << ", nodes: " << n_nodes << ", edges: " << n_links << endl;
 

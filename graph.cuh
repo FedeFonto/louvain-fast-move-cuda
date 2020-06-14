@@ -8,8 +8,21 @@
 #include <thrust/unique.h>
 #include <thrust/device_vector.h>
 
+#include "constants.h"
+#include "operators.h"
 #include "graphHost.cuh"
 
+__global__
+static void renumber_kernel(
+	unsigned int* k,
+	unsigned int* map,
+	unsigned int limit) {
+
+	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
+	if (id < limit) {
+		map[k[id]] = 1;
+	}
+}
 
 struct GraphDevice {
 
@@ -63,18 +76,51 @@ struct GraphDevice {
 			weights.begin()
 		);
 
-		thrust::transform(edge_source.begin(),
-			edge_source.end(),
-			thrust::make_constant_iterator(g.min_id),
-			edge_source.begin(),
-			thrust::minus<int>());
+		if (g.max_id - g.min_id >= n_nodes) {
+			std::cout << "Renumbering" << std::endl;
+			auto map = thrust::device_vector<unsigned int>(g.max_id + 1, 0);
+			int n_blocks = (edge_source.size() + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
-		thrust::transform(edge_destination.begin(),
-			edge_destination.end(),
-			thrust::make_constant_iterator(g.min_id),
-			edge_destination.begin(),
-			thrust::minus<int>());
+			renumber_kernel<<<n_blocks, BLOCK_SIZE>>>(
+				thrust::raw_pointer_cast(edge_source.data()),
+				thrust::raw_pointer_cast(map.data()),
+				edge_source.size()
+				);
 
+			//prefix sum
+			thrust::inclusive_scan(
+				map.begin(),
+				map.end(),
+				map.begin()
+			);
+
+			thrust::transform(
+				edge_source.begin(),
+				edge_source.end(),
+				edge_source.begin(),
+				MapElement(thrust::raw_pointer_cast(map.data()))
+			);
+
+			thrust::transform(
+				edge_destination.begin(),
+				edge_destination.end(),
+				edge_destination.begin(),
+				MapElement(thrust::raw_pointer_cast(map.data()))
+			);
+		}
+		else {
+			thrust::transform(edge_source.begin(),
+				edge_source.end(),
+				thrust::make_constant_iterator(g.min_id),
+				edge_source.begin(),
+				thrust::minus<int>());
+
+			thrust::transform(edge_destination.begin(),
+				edge_destination.end(),
+				thrust::make_constant_iterator(g.min_id),
+				edge_destination.begin(),
+				thrust::minus<int>());
+		}
 
 		thrust::reduce_by_key(
 			edge_source.begin(),

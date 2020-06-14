@@ -66,20 +66,11 @@ struct Community {
 
 
 	void compute_modularity() {	
-		auto square_communtity = thrust::device_vector<double>(graph.n_links * 2);
-
-		thrust::transform(
-			thrust::cuda::par.on(streams[0]),
-			communities_weight.begin(),
-			communities_weight.end(),
-			square_communtity.begin(),
-			Square<double>()
-		);
-
+		
 		double community_tot = thrust::reduce(
 			thrust::cuda::par.on(streams[0]),
-			square_communtity.begin(),
-			square_communtity.end()
+			thrust::make_transform_iterator(communities_weight.begin(), Square<double>()),
+			thrust::make_transform_iterator(communities_weight.end(), Square<double>())
 		);
 
 		auto values_weight = thrust::device_vector<unsigned>(graph.n_links * 2);
@@ -98,8 +89,6 @@ struct Community {
 			values_weight.begin(),
 			p
 		);
-
-		std::cout << std::fixed << "VALUES : "<< nodes_2_self_community << " " << community_tot << " " << graph.total_weight << std::endl;
 		
 		modularity = nodes_2_self_community / (2 * graph.total_weight) - (community_tot)/ (4 * graph.total_weight * graph.total_weight);
 
