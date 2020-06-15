@@ -164,6 +164,16 @@ private:
 
 		std::cout << "Optimization Phase " << MyUtils::mode_name(mode) << std::endl;
 #endif 
+		old_modularity = community.modularity;
+		optimize();
+		execution_number++;
+		community.compute_modularity();
+		delta = community.modularity - old_modularity;
+
+#if PRINT_DEBUG_LOG
+		printf("MODULARITY = %10f\n", community.modularity);
+		printf("Delta Modularity iteration %d: %10f \n", execution_number, delta);
+#endif 
 
 		do {
 			old_modularity = community.modularity;
