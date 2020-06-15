@@ -42,7 +42,7 @@ private:
 	HashMap* hashmap;
 
 #if PRINT_PERFORMANCE_LOG
-	std::vector<float> performance = std::vector<float>();
+	std::vector<float> performance = std::vector<float>(10,0);
 #endif
 
 	
@@ -150,7 +150,8 @@ private:
 		cudaEventSynchronize(stop);
 		float milliseconds = 0;
 		cudaEventElapsedTime(&milliseconds, start, stop);
-		performance.push_back(milliseconds);
+		if(execution_number < 10)
+			performance[execution_number] = milliseconds;
 #endif
 	};
 
