@@ -3,8 +3,8 @@
 
 int main()
 {
-    std::vector<std::string> dataset = { "out.patentcite",  "soc-pokec-relationships.txt", "coPapersDBLP.mtx", "packing-500x100x100-b050.mtx","soc-LiveJournal.txt", "ljournal-2008.mtx","out.wikipedia_link_ja",  "hollywood-2009.mtx","out.wikipedia_link_it" , "out.wikipedia_link_fr","com-orkut.ungraph.txt", "out.dbpedia-link", "indochina-2004.mtx" };
-    std::vector<int> skip = {2, 0, 129, 141, 0, 56, 1, 49,  1, 1, 0, 2, 48 };
+    std::vector<std::string> dataset = { "coPapersDBLP.mtx", "out.patentcite", "packing-500x100x100-b050.mtx", "soc-pokec-relationships.txt", "delaunay_n23.mtx", "soc-LiveJournal.txt" ,"out.wikipedia_link_ja",  "hollywood-2009.mtx","out.wikipedia_link_it" , "out.wikipedia_link_fr","com-orkut.ungraph.txt", "out.dbpedia-link", "indochina-2004.mtx" };
+    std::vector<int> skip = { 129, 2, 141, 0, 131, 0, 1, 49,  1, 1, 0, 2, 48 };
 
     for(int i = 0; i< dataset.size(); i++)
     {
