@@ -18,23 +18,23 @@ int main()
             auto histo_2 = thrust::device_vector  <int>(C.graph.n_of_neighboor.size(), 0);
 
             thrust::sort(C.graph.n_of_neighboor.begin(), C.graph.n_of_neighboor.end());
+
+            auto max_val = C.graph.n_of_neighboor.back();
             auto k = thrust::reduce_by_key(C.graph.n_of_neighboor.begin(), C.graph.n_of_neighboor.end(), thrust::constant_iterator< int>(1), histo_1.begin(), histo_2.begin());
-            thrust::sort_by_key(histo_2.begin(), k.second, histo_1.begin());
-            auto zip2 = thrust::make_zip_iterator(thrust::make_tuple(k.first, k.second));
-            auto zip = thrust::make_zip_iterator(thrust::make_tuple(histo_1.begin(), histo_2.begin()));
-            thrust::reverse(zip, zip2);
-            int i = 0;
-            bool b = true;
-            while (b) {
-                if (histo_1[i] != 0) {
-                    std::cout << histo_1[i] << " " << histo_2[i] << std::endl;
-                    i++;
-                }
-                else {
-                    b = 0;
-                }
+            auto len = k.first - histo_1.begin();
+
+            auto max_pow = 2;
+            while (max_pow < max_val)
+                max_pow = max_pow * 2;
+
+            auto histo_3 = thrust::device_vector  <int>(max_pow, 0);
+            for (int h = 0; h < len; h++ ) {
+                histo_3[histo_1[h]] = histo_2[h];
             }
 
+            for (int h = 0; h < max_pow; h++) {
+                std::cout << h << " " << histo_3[h] << std::endl;
+            }
         }
         catch (std::bad_alloc e) {
             std::cout << "Bad Alloc Graph" << std::endl;
