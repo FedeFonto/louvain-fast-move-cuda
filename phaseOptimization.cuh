@@ -170,9 +170,17 @@ private:
 		community.compute_modularity();
 		delta = community.modularity - old_modularity;
 
+
 #if PRINT_DEBUG_LOG
-		printf("MODULARITY = %10f\n", community.modularity);
-		printf("Delta Modularity iteration %d: %10f \n", execution_number, delta);
+		std::cout << "Delta:" << std::endl;
+		auto n_com = thrust::transform_reduce(
+			community.communities_weight.begin(),
+			community.communities_weight.end(),
+			CountNotZero(),
+			0,
+			thrust::plus<unsigned>()
+		);
+		std::cout << community.modularity << ", " << delta << ", " << n_com << std::endl;
 #endif 
 
 		do {
@@ -183,8 +191,15 @@ private:
 			delta = community.modularity - old_modularity;
 
 #if PRINT_DEBUG_LOG
-			printf("MODULARITY = %10f\n", community.modularity);
-			printf("Delta Modularity iteration %d: %10f \n", execution_number, delta);
+			std::cout << "Delta:" << std::endl;
+			auto n_com = thrust::transform_reduce(
+				community.communities_weight.begin(),
+				community.communities_weight.end(),
+				CountNotZero(),
+				0,
+				thrust::plus<unsigned>()
+			);
+			std::cout << community.modularity << ", " << delta << ", " << n_com << std::endl;
 #endif 
 
 		} while ((execution_number <= EARLY_STOP_LIMIT) && (delta > MODULARITY_CONVERGED_THRESHOLD));
