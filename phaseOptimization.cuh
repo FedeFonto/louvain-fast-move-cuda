@@ -44,7 +44,11 @@ private:
 #if PRINT_PERFORMANCE_LOG
 	std::vector<float> performance = std::vector<float>(10,0);
 #endif
-
+#if PRINT_DEBUG_LOG
+	std::vector<float> modularity = std::vector<float>(10, 0);
+	std::vector<float> delta_mod = std::vector<float>(10, 0);
+	std::vector<int> n_comm = std::vector<int>(10, 0);
+#endif
 	
 
 	OptimizationPhase(Community& c, MODE m) :
@@ -166,41 +170,46 @@ private:
 #endif 
 		old_modularity = community.modularity;
 		optimize();
-		execution_number++;
 		community.compute_modularity();
 		delta = community.modularity - old_modularity;
 
-
 #if PRINT_DEBUG_LOG
-		std::cout << "Delta:" << std::endl;
-		auto n_com = thrust::transform_reduce(
-			community.communities_weight.begin(),
-			community.communities_weight.end(),
-			CountNotZero(),
-			0,
-			thrust::plus<unsigned>()
-		);
-		std::cout << community.modularity << ", " << delta << ", " << n_com << std::endl;
-#endif 
-
-		do {
-			old_modularity = community.modularity;
-			optimize();
-			execution_number++;
-			community.compute_modularity();
-			delta = community.modularity - old_modularity;
-
-#if PRINT_DEBUG_LOG
-			std::cout << "Delta:" << std::endl;
-			auto n_com = thrust::transform_reduce(
+		if (execution_number < 10) {
+			modularity[execution_number] = community.modularity;
+			delta_mod[execution_number] = delta;
+			n_comm[execution_number] = thrust::transform_reduce(
 				community.communities_weight.begin(),
 				community.communities_weight.end(),
 				CountNotZero(),
 				0,
 				thrust::plus<unsigned>()
 			);
-			std::cout << community.modularity << ", " << delta << ", " << n_com << std::endl;
+		}
 #endif 
+		execution_number++;
+
+
+		do {
+			old_modularity = community.modularity;
+			optimize();
+			community.compute_modularity();
+			delta = community.modularity - old_modularity;
+
+#if PRINT_DEBUG_LOG
+			if (execution_number < 10) {
+				modularity[execution_number] = community.modularity;
+				delta_mod[execution_number] = delta;
+				n_comm[execution_number] = thrust::transform_reduce(
+					community.communities_weight.begin(),
+					community.communities_weight.end(),
+					CountNotZero(),
+					0,
+					thrust::plus<unsigned>()
+				);
+			}
+#endif 
+			execution_number++;
+
 
 		} while ((execution_number <= EARLY_STOP_LIMIT) && (delta > MODULARITY_CONVERGED_THRESHOLD));
 
@@ -229,6 +238,19 @@ public:
 			std::cout << optimizer.performance[i] << "," ;
 		std::cout << milliseconds << std::endl;
 #endif
+
+#if PRINT_DEBUG_LOG
+		std::cout << std::endl << "Modularity Stats: " << std::endl;
+		for (int i = 0; i < optimizer.modularity.size(); i++)
+			std::cout << optimizer.modularity[i] << ",";
+		std::cout << std::endl;
+		for (int i = 0; i < optimizer.delta_mod.size(); i++)
+			std::cout << optimizer.delta_mod[i] << ",";
+		std::cout << std::endl;
+		for (int i = 0; i < optimizer.n_comm.size(); i++)
+			std::cout << optimizer.n_comm[i] << ",";
+		std::cout << std::endl;
+#endif 
 	}
 		
 };
