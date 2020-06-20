@@ -157,7 +157,9 @@ void OptimizationPhase::optimize_hash() {
 	std::cout << resize_sum << ",";
 	std::cout << transform_sum << ",";
 	std::cout << update_sum << ",";
+#if INCLUDE_UPDATES == 0
 	std::cout << total << std::endl;
+#endif
 #endif
 }
 

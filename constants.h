@@ -3,10 +3,10 @@
 
 #include <vector>
 
-#define PRINT_DEBUG_LOG 1
-#define PRINT_PERFORMANCE_LOG 0
+#define PRINT_DEBUG_LOG 0
+#define PRINT_PERFORMANCE_LOG 1
 #define INCLUDE_SUBPHASE 1
-#define INCLUDE_UPDATES 0
+#define INCLUDE_UPDATES 1
 #define INCLUDE_FAST 1
 
 

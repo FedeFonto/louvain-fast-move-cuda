@@ -374,7 +374,9 @@ void OptimizationPhase::optimize_sort() {
 	std::cout << self_c_sum << ",";
 	std::cout << transform_sum << ",";
 	std::cout << reduce_transform_sum << ",";
+#if INCLUDE_UPDATES == 0
 	std::cout << total << std::endl;
+#endif
 #endif
 }
 

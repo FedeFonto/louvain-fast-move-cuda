@@ -166,11 +166,8 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 	cudaEventSynchronize(b);
 	float milliseconds = 0;
 	cudaEventElapsedTime(&milliseconds, a, b);
-#if CSV_FORM
 	std::cout << milliseconds << ",";
-#else
-	std::cout << " - Update Time : " << milliseconds << "ms" << std::endl;
-#endif
+
 #endif
 
 	n_blocks = (community.graph.edge_source.size() + BLOCK_SIZE - 1) / BLOCK_SIZE;
@@ -188,11 +185,8 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 	cudaEventSynchronize(a);
 	milliseconds = 0;
 	cudaEventElapsedTime(&milliseconds, b, a);
-#if CSV_FORM
-	std::cout << milliseconds << "," << std::endl;
-#else
-	std::cout << " - Neighboorhood Update Time : " << milliseconds << "ms" << std::endl;
-#endif
+	std::cout << milliseconds << std::endl;
+
 #endif
 }
 
