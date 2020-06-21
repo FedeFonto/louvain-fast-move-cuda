@@ -12,7 +12,7 @@ struct TestTupleValue : public thrust::unary_function<thrust::tuple<unsigned int
 		unsigned int source = thrust::get<0>(d);
 		unsigned int dest = thrust::get<1>(d);
 
-		return changed[source] && source != dest;
+		return source != dest;
 	};
 
 	TestTupleValue(bool* c) : changed(c) {};

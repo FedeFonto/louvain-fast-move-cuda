@@ -15,17 +15,7 @@ int main()
         try {
             GraphHost g = GraphHost::GraphHost("dataset/" + dataset[i], false, skip[i]);
             std::cout << std::endl;
-            try {
-                for (int i = 0; i < round; i++) {
-                    std::cout << std::endl << "################### HASH " << i << " ##################" << std::endl;
-                    auto C = ModularityAlgorithms::Louvain(g, HASH);
-                    std::cout << "N of community found:" << C.n_of_best_communities << std::endl;
-                }
-
-            }
-            catch (std::bad_alloc e) {
-                std::cout << "Bad Alloc" << std::endl;
-            }
+          
             try {
                 for (int i = 0; i < round; i++) {
                     std::cout << std::endl << "################### SORT "<< i << " ##################" << std::endl;
