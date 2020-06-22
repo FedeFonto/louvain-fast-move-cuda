@@ -153,7 +153,9 @@ void OptimizationPhase::optimize_fast() {
 	std::cout << copy_sum << ",";
 	std::cout << transform_sum << ",";
 	std::cout << reduce_transform_sum << ",";
+#if INCLUDE_UPDATES == 0
 	std::cout << total << std::endl;
+#endif
 #endif
 }
 
