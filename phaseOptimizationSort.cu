@@ -65,8 +65,8 @@ void OptimizationPhase::optimize_fast() {
 		int n_edge_in_buckets;
 
 		auto p = thrust::copy_if(
-			thrust::make_transform_iterator(community.start + round, MakeCommunityDest(thrust::raw_pointer_cast(community.communities.data()))),
-			thrust::make_transform_iterator(community.start + limit_round, MakeCommunityDest(thrust::raw_pointer_cast(community.communities.data()))),
+			community.start + round,
+			community.start + limit_round,
 			thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.begin() + round, community.graph.edge_destination.begin() + round)),
 			selected_edge,
 			TestTupleValue(thrust::raw_pointer_cast(neighboorhood_change.data()))
