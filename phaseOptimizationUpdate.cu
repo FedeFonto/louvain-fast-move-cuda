@@ -102,12 +102,11 @@ static void update_changed_kernel(
 	bool* its_changed,
 	unsigned int* source,
 	unsigned int* dest,
-	unsigned int n_edge,
-	unsigned int* communities
+	unsigned int n_edge
 ) {
 	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
 	if (id < n_edge) {
-		if (its_changed[dest[id]] && communities[dest[id]] != communities[source[id]]) {
+		if (its_changed[dest[id]]) {
 			n_changed[source[id]] = true;
 		}
 	}
@@ -176,8 +175,7 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 		thrust::raw_pointer_cast(its_changed.data()),
 		thrust::raw_pointer_cast(community.graph.edge_source.data()),
 		thrust::raw_pointer_cast(community.graph.edge_destination.data()),
-		community.graph.edge_source.size(),
-		thrust::raw_pointer_cast(community.communities.data())
+		community.graph.edge_source.size()
 		);
 
 #if PRINT_PERFORMANCE_LOG && INCLUDE_UPDATES
