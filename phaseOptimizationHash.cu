@@ -60,8 +60,10 @@ void OptimizationPhase::optimize_hash() {
 	int limit_round;
 	int round = 0;
 	int nkey = 0;
+	int iteration = 0;
 
 	while (round < community.graph.edge_destination.size()) {
+		iteration++;
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(round_start);
 #endif
@@ -150,7 +152,7 @@ void OptimizationPhase::optimize_hash() {
 #endif
 		round = limit_round;
 	}
-	std::cout << "Number of distinct keys : " << nkey << std::endl;
+	std::cout << "Number of distinct keys : " << std::endl << nkey << "," << ((double) nkey )/ community.graph.edge_destination.size() << "," << BUCKETS_SIZE * iteration << "," << ((double)nkey) / (BUCKETS_SIZE * iteration) << std::endl;
 
 
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE

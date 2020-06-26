@@ -43,11 +43,13 @@ void OptimizationPhase::optimize_fast() {
 	int limit_round;
 	int round = 0;
 	int nkey = 0;
-
+	int iteration = 0;
 	while (round < community.graph.edge_destination.size()) {
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_FAST
 		cudaEventRecord(round_start);
 #endif
+		iteration++;
+
 		key_node_source.resize(STEP_ROUND);
 		key_community_dest.resize(STEP_ROUND);
 		values_weight.resize(STEP_ROUND);
@@ -148,7 +150,7 @@ void OptimizationPhase::optimize_fast() {
 #endif
 	}
 
-	std::cout << "Number of distinct keys : " << nkey << std::endl;
+	std::cout << "Number of distinct keys : " << std::endl << nkey << "," << ((double)nkey) / community.graph.edge_destination.size() << "," << BUCKETS_SIZE * iteration << "," << ((double)nkey) / (BUCKETS_SIZE * iteration) << std::endl;
 
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_FAST
 	std::cout << community.graph.edge_destination.size() << ",";
@@ -188,11 +190,13 @@ void OptimizationPhase::optimize_sort() {
 	int limit_round;
 	int round = 0;
 	int nkey = 0;
+	int iteration = 0;
 
 	while (round < community.graph.edge_destination.size()) {
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 		cudaEventRecord(round_start);
 #endif
+		iteration++;
 		key_node_source.resize(STEP_ROUND);
 		key_community_dest.resize(STEP_ROUND);
 		values_weight.resize(STEP_ROUND);
@@ -370,7 +374,8 @@ void OptimizationPhase::optimize_sort() {
 #endif
 	}
 
-	std::cout << "Number of distinct keys : " << nkey << std::endl;
+
+	std::cout << "Number of distinct keys : " << std::endl << nkey << "," << ((double)nkey) / community.graph.edge_destination.size() << "," << BUCKETS_SIZE * iteration << "," << ((double)nkey) / (BUCKETS_SIZE * iteration) << std::endl;
 
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 	std::cout << community.graph.edge_destination.size() << ",";
