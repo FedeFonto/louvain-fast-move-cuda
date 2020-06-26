@@ -73,7 +73,7 @@ void OptimizationPhase::optimize_fast() {
 		);
 
 		n_edge_in_buckets = p - selected_edge;
-
+		n_key += n_edge_in_buckets;
 		key_node_source.resize(n_edge_in_buckets);
 		key_community_dest.resize(n_edge_in_buckets);
 		values_weight.resize(n_edge_in_buckets);
@@ -291,6 +291,8 @@ void OptimizationPhase::optimize_sort() {
 #endif
 
 		auto n_reduced_edges = new_end.first - reduced_key;
+		n_key += n_reduced_edges;
+
 		reduced_key_source.resize(n_reduced_edges);
 		reduced_key_dest.resize(n_reduced_edges);
 		reduced_value.resize(n_reduced_edges);
