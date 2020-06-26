@@ -72,7 +72,7 @@ private:
 		final_community = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
 		final_value = thrust::device_vector<float>(c.graph.n_nodes, -1);
 
-		activate_hash == mode == HASH || mode == ADAPTIVE_MEMORY;
+		activate_hash = mode == HASH || mode == ADAPTIVE_MEMORY;
 		n_key = community.graph.edge_source.size();
 	}
 
