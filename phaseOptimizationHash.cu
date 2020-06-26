@@ -59,6 +59,7 @@ void OptimizationPhase::optimize_hash() {
 
 	int limit_round;
 	int round = 0;
+	int nkey = 0;
 
 	while (round < community.graph.edge_destination.size()) {
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
@@ -95,6 +96,8 @@ void OptimizationPhase::optimize_hash() {
 #endif
 
 		int n_edge_in_buckets = hashmap->contract_array();
+
+		nkey += n_edge_in_buckets;
 
 
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
@@ -147,6 +150,8 @@ void OptimizationPhase::optimize_hash() {
 #endif
 		round = limit_round;
 	}
+	std::cout << "Number of distinct keys : " << nkey << std::endl;
+
 
 #if  PRINT_PERFORMANCE_LOG && INCLUDE_SUBPHASE
 	std::cout << community.graph.edge_destination.size() << ",";
