@@ -73,7 +73,7 @@ private:
 		final_value = thrust::device_vector<float>(c.graph.n_nodes, -1);
 
 		activate_hash = mode == HASH || mode == ADAPTIVE_MEMORY;
-		n_key = community.graph.edge_source.size();
+		n_key =  0;
 	}
 
 
@@ -131,7 +131,7 @@ private:
 		cudaEventCreate(&stop);
 		cudaEventRecord(start);
 #endif
-		if (mode == ADAPTIVE_SPEED && !activate_hash) {
+		if (mode == ADAPTIVE_SPEED && !activate_hash && execution_number > 0) {
 			activate_hash = ((double)n_key) / community.graph.edge_source.size() < 0.30;
 		}
 
