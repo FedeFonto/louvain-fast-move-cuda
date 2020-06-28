@@ -36,7 +36,9 @@ private:
 	Community& community;
 	int execution_number = 0;
 
-	const static int adaptive = 4;
+	bool activate_hash = false;
+	bool is_hash_active = false;
+	int n_key = 0;
 
 	MODE mode;
 	HashMap* hashmap;
@@ -69,11 +71,14 @@ private:
 		final_node = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
 		final_community = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
 		final_value = thrust::device_vector<float>(c.graph.n_nodes, -1);
+
+		activate_hash = mode == HASH || mode == ADAPTIVE_MEMORY;
+		n_key =  0;
 	}
 
 
 	~OptimizationPhase() {
-		if (((mode == HASH || mode == ADAPTIVE_MEMORY ) && execution_number > 1) || (mode == ADAPTIVE_SPEED && execution_number > (adaptive +1))) {
+		if (is_hash_active) {
 			delete hashmap;
 		}
 	}
@@ -108,6 +113,8 @@ private:
 
 		final_pair = thrust::device_vector<unsigned long long int>(community.graph.n_nodes, 0);
 		hashmap = new HashMap(BUCKETS_SIZE);
+
+		is_hash_active = true;
 	}
 	
 
@@ -124,11 +131,16 @@ private:
 		cudaEventCreate(&stop);
 		cudaEventRecord(start);
 #endif
-		nodes_considered = 0;
+		if (mode == ADAPTIVE_SPEED && !activate_hash && execution_number > 0) {
+			activate_hash = ((double)n_key) / community.graph.edge_source.size() < 0.30;
+		}
 
-		if ((mode == ADAPTIVE_SPEED && execution_number == adaptive) || ((mode == HASH || mode == ADAPTIVE_MEMORY ) && execution_number == 1)) {
+		if ((mode == ADAPTIVE_SPEED && activate_hash && !is_hash_active) || ((mode == HASH || mode == ADAPTIVE_MEMORY ) && execution_number == 1)) {
 			swap_mode();
 		}
+
+		n_key = 0;
+		nodes_considered = 0;
 
 		if (execution_number == 0) {
 			thrust::fill(final_value.begin(), final_value.end(), -1);
@@ -136,7 +148,7 @@ private:
 			fast_move_update(false);
 		}
 		else {
-			const bool useHash = mode == HASH || mode == ADAPTIVE_MEMORY || (mode == ADAPTIVE_SPEED && execution_number > adaptive);
+			const bool useHash = mode == HASH || mode == ADAPTIVE_MEMORY || (mode == ADAPTIVE_SPEED && activate_hash);
 			if (useHash) {
 				thrust::fill(final_pair.begin(), final_pair.end(), 0);
 				optimize_hash();

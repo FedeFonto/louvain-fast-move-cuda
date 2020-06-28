@@ -65,15 +65,15 @@ void OptimizationPhase::optimize_fast() {
 		int n_edge_in_buckets;
 
 		auto p = thrust::copy_if(
-			thrust::make_transform_iterator(community.start + round, MakeCommunityDest(thrust::raw_pointer_cast(community.communities.data()))),
-			thrust::make_transform_iterator(community.start + limit_round, MakeCommunityDest(thrust::raw_pointer_cast(community.communities.data()))),
+			community.start + round,
+			community.start + limit_round,
 			thrust::make_zip_iterator(thrust::make_tuple(community.graph.edge_source.begin() + round, community.graph.edge_destination.begin() + round)),
 			selected_edge,
 			TestTupleValue(thrust::raw_pointer_cast(neighboorhood_change.data()))
 		);
 
 		n_edge_in_buckets = p - selected_edge;
-
+		n_key += n_edge_in_buckets;
 		key_node_source.resize(n_edge_in_buckets);
 		key_community_dest.resize(n_edge_in_buckets);
 		values_weight.resize(n_edge_in_buckets);
@@ -153,7 +153,9 @@ void OptimizationPhase::optimize_fast() {
 	std::cout << copy_sum << ",";
 	std::cout << transform_sum << ",";
 	std::cout << reduce_transform_sum << ",";
+#if INCLUDE_UPDATES == 0
 	std::cout << total << std::endl;
+#endif
 #endif
 }
 
@@ -289,6 +291,8 @@ void OptimizationPhase::optimize_sort() {
 #endif
 
 		auto n_reduced_edges = new_end.first - reduced_key;
+		n_key += n_reduced_edges;
+
 		reduced_key_source.resize(n_reduced_edges);
 		reduced_key_dest.resize(n_reduced_edges);
 		reduced_value.resize(n_reduced_edges);

@@ -102,12 +102,11 @@ static void update_changed_kernel(
 	bool* its_changed,
 	unsigned int* source,
 	unsigned int* dest,
-	unsigned int n_edge,
-	unsigned int* communities
+	unsigned int n_edge
 ) {
 	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
 	if (id < n_edge) {
-		if (its_changed[dest[id]] && communities[dest[id]] != communities[source[id]]) {
+		if (its_changed[dest[id]]) {
 			n_changed[source[id]] = true;
 		}
 	}
