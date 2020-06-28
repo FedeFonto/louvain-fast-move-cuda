@@ -135,14 +135,14 @@ private:
 			activate_hash = ((double)n_key) / community.graph.edge_source.size() < 0.30;
 		}
 
-		if ((mode == ADAPTIVE_SPEED && activate_hash && !is_hash_active) || ((mode == HASH || mode == ADAPTIVE_MEMORY ) && execution_number == 1)) {
+		if ((mode == ADAPTIVE_SPEED && activate_hash && !is_hash_active) || ((mode == HASH || mode == ADAPTIVE_MEMORY ) && execution_number == 0)) {
 			swap_mode();
 		}
 
 		n_key = 0;
 		nodes_considered = 0;
 
-		if (execution_number == 0) {
+		if (execution_number == -1) {
 			thrust::fill(final_value.begin(), final_value.end(), -1);
 			optimize_fast();
 			fast_move_update(false);
