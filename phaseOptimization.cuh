@@ -60,17 +60,24 @@ private:
 	
 		its_changed = thrust::device_vector<bool>(community.graph.n_nodes, false);
 
-		key_node_source = thrust::device_vector<unsigned int>(STEP_ROUND);
-		key_community_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
-		values_weight = thrust::device_vector<float>(STEP_ROUND);
+		if (mode == HASH || mode == ADAPTIVE_MEMORY) {
+			final_pair = thrust::device_vector<unsigned long long int>(community.graph.n_nodes, 0);
+			hashmap = new HashMap(BUCKETS_SIZE);
+			is_hash_active = true;
+		}
+		else {
+			key_node_source = thrust::device_vector<unsigned int>(STEP_ROUND);
+			key_community_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
+			values_weight = thrust::device_vector<float>(STEP_ROUND);
 
-		reduced_key_source = thrust::device_vector<unsigned int>(STEP_ROUND);
-		reduced_key_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
-		reduced_value = thrust::device_vector<float>(STEP_ROUND);
-		
-		final_node = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
-		final_community = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
-		final_value = thrust::device_vector<float>(c.graph.n_nodes, -1);
+			reduced_key_source = thrust::device_vector<unsigned int>(STEP_ROUND);
+			reduced_key_dest = thrust::device_vector<unsigned int>(STEP_ROUND);
+			reduced_value = thrust::device_vector<float>(STEP_ROUND);
+
+			final_node = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
+			final_community = thrust::device_vector<unsigned int>(c.graph.n_nodes, 0);
+			final_value = thrust::device_vector<float>(c.graph.n_nodes, -1);
+		}
 
 		activate_hash = mode == HASH || mode == ADAPTIVE_MEMORY;
 		n_key =  0;
@@ -131,35 +138,21 @@ private:
 		cudaEventCreate(&stop);
 		cudaEventRecord(start);
 #endif
-		if (mode == ADAPTIVE_SPEED && !activate_hash && execution_number > 0) {
-			activate_hash = ((double)n_key) / community.graph.edge_source.size() < 0.30;
-		}
-
-		if ((mode == ADAPTIVE_SPEED && activate_hash && !is_hash_active) || ((mode == HASH || mode == ADAPTIVE_MEMORY ) && execution_number == 0)) {
-			swap_mode();
-		}
-
+	
 		n_key = 0;
 		nodes_considered = 0;
-
-		if (execution_number == -1) {
-			thrust::fill(final_value.begin(), final_value.end(), -1);
-			optimize_fast();
-			fast_move_update(false);
+		
+		const bool useHash = mode == HASH || mode == ADAPTIVE_MEMORY;
+		if (useHash) {
+			thrust::fill(final_pair.begin(), final_pair.end(), 0);
+			optimize_hash();
 		}
+		//if mode == SORT or (mode == ADAPTIVE_SPEED and execution_number <= 3)
 		else {
-			const bool useHash = mode == HASH || mode == ADAPTIVE_MEMORY || (mode == ADAPTIVE_SPEED && activate_hash);
-			if (useHash) {
-				thrust::fill(final_pair.begin(), final_pair.end(), 0);
-				optimize_hash();
-			}
-			//if mode == SORT or (mode == ADAPTIVE_SPEED and execution_number <= 3)
-			else {
-				thrust::fill(final_value.begin(), final_value.end(), -1);
-				optimize_sort();
-			}
-			fast_move_update(useHash);
+			thrust::fill(final_value.begin(), final_value.end(), -1);
+			optimize_sort();
 		}
+		fast_move_update(useHash);
 
 #if PRINT_PERFORMANCE_LOG
 		cudaEventRecord(stop);
@@ -182,8 +175,6 @@ private:
 #endif 
 		old_modularity = community.modularity;
 		optimize();
-		community.compute_modularity();
-		delta = community.modularity - old_modularity;
 
 #if PRINT_DEBUG_LOG
 		if (execution_number < 10) {

@@ -18,7 +18,8 @@ static void update_value_kernel_hash(
 	unsigned int* community,
 	double* community_weight,
 	unsigned* nodes_weight,
-	bool* its_changed
+	bool* its_changed,
+	bool first
 ) {
 	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
 	if (id < n_nodes) {
@@ -30,11 +31,13 @@ static void update_value_kernel_hash(
 			return;
 		}
 		else {
-			double v = nodes_weight[node];
-			atomicAdd(&community_weight[c], v);
-			atomicAdd(&community_weight[community[node]], v* -1);
-			community[node] = c;
-			its_changed[node] = true;
+			if (first || node > c) {
+				double v = nodes_weight[node];
+				atomicAdd(&community_weight[c], v);
+				atomicAdd(&community_weight[community[node]], v * -1);
+				community[node] = c;
+				its_changed[node] = true;
+			}
 		}
 	}
 };
@@ -48,7 +51,8 @@ static void update_value_kernel_sort(
 	unsigned int* community,
 	double* community_weight,
 	unsigned* nodes_weight,
-	bool* its_changed
+	bool* its_changed, 
+	bool first
 ) {
 	int id = threadIdx.x + blockIdx.x * BLOCK_SIZE;
 	if (id < n_nodes) {
@@ -58,11 +62,13 @@ static void update_value_kernel_sort(
 			return;
 		}
 		else {
-			double v = nodes_weight[node];
-			atomicAdd(&community_weight[c], v);
-			atomicAdd(&community_weight[community[node]], v * -1);
-			community[node] = c;
-			its_changed[node] = true;
+			if (first || node > c) {
+				double v = nodes_weight[node];
+				atomicAdd(&community_weight[c], v);
+				atomicAdd(&community_weight[community[node]], v * -1);
+				community[node] = c;
+				its_changed[node] = true;
+			}
 		}
 	}
 };
@@ -123,19 +129,7 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 	thrust::fill(its_changed.begin(), its_changed.end(), false);
 	thrust::fill(neighboorhood_change.begin(), neighboorhood_change.end(), false);
 	int n_blocks;
-	if (execution_number == 0) {
-		n_blocks = (nodes_considered + BLOCK_SIZE - 1) / BLOCK_SIZE;
-		update_value_kernel_fast<< <n_blocks, BLOCK_SIZE >> > (
-			nodes_considered,
-			thrust::raw_pointer_cast(final_node.data()),
-			thrust::raw_pointer_cast(final_community.data()),
-			thrust::raw_pointer_cast(final_value.data()),
-			thrust::raw_pointer_cast(community.communities.data()),
-			thrust::raw_pointer_cast(community.communities_weight.data()),
-			thrust::raw_pointer_cast(community.graph.tot_weight_per_nodes.data()),
-			thrust::raw_pointer_cast(its_changed.data())
-			);
-	} else if (useHash) {
+	if (useHash) {
 		n_blocks = (community.graph.n_nodes + BLOCK_SIZE - 1) / BLOCK_SIZE;
 		update_value_kernel_hash << <n_blocks, BLOCK_SIZE >> > (
 			community.graph.n_nodes,
@@ -143,7 +137,8 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 			thrust::raw_pointer_cast(community.communities.data()),
 			thrust::raw_pointer_cast(community.communities_weight.data()),
 			thrust::raw_pointer_cast(community.graph.tot_weight_per_nodes.data()),
-			thrust::raw_pointer_cast(its_changed.data())
+			thrust::raw_pointer_cast(its_changed.data()),
+			execution_number != 0
 			);
 	}
 	else {
@@ -156,7 +151,8 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 			thrust::raw_pointer_cast(community.communities.data()),
 			thrust::raw_pointer_cast(community.communities_weight.data()),
 			thrust::raw_pointer_cast(community.graph.tot_weight_per_nodes.data()),
-			thrust::raw_pointer_cast(its_changed.data())
+			thrust::raw_pointer_cast(its_changed.data()),
+			execution_number != 0
 			);
 	}
 
