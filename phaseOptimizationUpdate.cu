@@ -178,6 +178,7 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 			thrust::raw_pointer_cast(community.graph.edge_destination.data()),
 			community.graph.edge_source.size()
 			);
+	}
 	else {
 		thrust::fill(neighboorhood_change.begin(), neighboorhood_change.end(), true);
 
