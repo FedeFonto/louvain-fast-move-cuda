@@ -59,7 +59,7 @@ static void kernel_optimization(unsigned int* k1,
 {
 	int id = offset + threadIdx.x + blockIdx.x * BLOCK_SIZE;
 	if (id < n_of_elem) {
-		if(community_change[k1[id]] && k1[id] != k2[id])
+		if(k1[id] != k2[id])
 			if (communities[k1[id]] == communities[k2[id]])
 				atomicAdd(&self[k1[id]], v[id]);
 			else

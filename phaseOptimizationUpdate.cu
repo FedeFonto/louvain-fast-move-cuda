@@ -121,7 +121,6 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 	cudaEventRecord(a);
 #endif
 	thrust::fill(its_changed.begin(), its_changed.end(), false);
-	thrust::fill(neighboorhood_change.begin(), neighboorhood_change.end(), false);
 	int n_blocks;
 	if (execution_number == 0) {
 		n_blocks = (nodes_considered + BLOCK_SIZE - 1) / BLOCK_SIZE;
@@ -169,14 +168,20 @@ void OptimizationPhase::fast_move_update(const bool useHash) {
 
 #endif
 
-	n_blocks = (community.graph.edge_source.size() + BLOCK_SIZE - 1) / BLOCK_SIZE;
-	update_changed_kernel << <n_blocks, BLOCK_SIZE >> > (
-		thrust::raw_pointer_cast(neighboorhood_change.data()),
-		thrust::raw_pointer_cast(its_changed.data()),
-		thrust::raw_pointer_cast(community.graph.edge_source.data()),
-		thrust::raw_pointer_cast(community.graph.edge_destination.data()),
-		community.graph.edge_source.size()
-		);
+	if (!useHash) {
+		thrust::fill(neighboorhood_change.begin(), neighboorhood_change.end(), false);
+		n_blocks = (community.graph.edge_source.size() + BLOCK_SIZE - 1) / BLOCK_SIZE;
+		update_changed_kernel << <n_blocks, BLOCK_SIZE >> > (
+			thrust::raw_pointer_cast(neighboorhood_change.data()),
+			thrust::raw_pointer_cast(its_changed.data()),
+			thrust::raw_pointer_cast(community.graph.edge_source.data()),
+			thrust::raw_pointer_cast(community.graph.edge_destination.data()),
+			community.graph.edge_source.size()
+			);
+	else {
+		thrust::fill(neighboorhood_change.begin(), neighboorhood_change.end(), true);
+
+	}
 
 #if PRINT_PERFORMANCE_LOG && INCLUDE_UPDATES
 	cudaEventRecord(a);
