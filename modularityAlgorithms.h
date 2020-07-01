@@ -88,7 +88,7 @@ private:
 
 		std::cout << std::endl << "AGGR " << MyUtils::mode_name(mode) << std::endl;
 		for (int i = 0; i < aggr.size() - 1; i++)
-			std::cout << stats[i] << ",";
+			std::cout << aggr[i] << ",";
 		std::cout << aggr.back() << std::endl;
 
 
