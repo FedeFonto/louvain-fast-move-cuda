@@ -18,6 +18,9 @@ private:
 		auto stats = thrust::device_vector<float>(6);
 		stats[0] = graph.n_nodes;
 		stats[1] = graph.n_links;
+		auto aggr = std::vector<float>();
+		auto opti = std::vector<float>();
+
 
 		printf("Start of Optimization Algorithm\n");
 		cudaEvent_t start, stop;
@@ -44,6 +47,7 @@ private:
 			cudaEventSynchronize(r_stop);
 			float milliseconds = 0;
 			cudaEventElapsedTime(&milliseconds, r_start, r_stop);
+			opti.push_back(milliseconds);
 
 			if (iteration == 0) {
 				stats[2] = milliseconds;
@@ -57,7 +61,7 @@ private:
 			cudaEventSynchronize(a_stop);
 			milliseconds = 0;
 			cudaEventElapsedTime(&milliseconds, r_stop, a_stop);
-
+			aggr.push_back(milliseconds);
 			if (iteration == 0) {
 				stats[3] = milliseconds;
 			}
@@ -77,6 +81,17 @@ private:
 		for (int i = 0; i < 5; i++)
 			std::cout <<stats[i] << ",";
 		std::cout <<stats[5] <<  std::endl;
+		std::cout << std::endl << "OPTI " << MyUtils::mode_name(mode) << std::endl;
+		for (int i = 0; i < opti.size() -1 ; i++)
+			std::cout << opti[i] << ",";
+		std::cout << opti.back() << std::endl;
+
+		std::cout << std::endl << "AGGR " << MyUtils::mode_name(mode) << std::endl;
+		for (int i = 0; i < aggr.size() - 1; i++)
+			std::cout << stats[i] << ",";
+		std::cout << aggr.back() << std::endl;
+
+
 		return C;
 	}
 };
